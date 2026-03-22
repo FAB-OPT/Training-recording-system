@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ระบบบันทึกการสอนงานหน้าสาขา - เฟส 3</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg1:#0f172a;--bg2:#1e293b;--text:#0f172a;--muted:#64748b;--primary:#2563eb;--primary-hover:#1d4ed8;
+      --border:#e2e8f0;--shadow:0 20px 60px rgba(15,23,42,.18);--white:#fff;--success:#16a34a;--danger:#dc2626;
+      --soft:#f8fafc;--warning:#f59e0b;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Sarabun',sans-serif;background:
+      radial-gradient(circle at top left, rgba(37,99,235,.25), transparent 35%),
+      radial-gradient(circle at bottom right, rgba(14,165,233,.22), transparent 35%),
+      linear-gradient(135deg, var(--bg1), var(--bg2));min-height:100vh;color:var(--text)}
+    .hidden{display:none !important}
+    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{width:100%;max-width:1120px;background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.35);border-radius:32px;box-shadow:var(--shadow);overflow:hidden;display:grid;grid-template-columns:1.05fr .95fr}
+    .hero{padding:48px;background:linear-gradient(180deg, rgba(37,99,235,.08), rgba(255,255,255,.02)), #f8fbff;border-right:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;gap:24px}
+    .eyebrow,.chip{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:#dbeafe;color:#1d4ed8;font-weight:600;width:max-content;font-size:14px}
+    .hero h1{margin:14px 0 10px;font-size:clamp(30px,4vw,46px);line-height:1.12}
+    .hero p{margin:0;color:var(--muted);font-size:18px;line-height:1.65}
+    .features{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:18px}
+    .feature{background:#fff;border:1px solid var(--border);border-radius:20px;padding:16px}
+    .feature strong{display:block;font-size:16px;margin-bottom:6px}.feature span{color:var(--muted);font-size:14px;line-height:1.5}
+    .panel{padding:34px;display:flex;flex-direction:column;justify-content:center;background:#fff}
+    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px;background:#f8fafc;border:1px solid var(--border);padding:8px;border-radius:18px}
+    .tab-btn{border:none;background:transparent;padding:14px 16px;font-size:16px;font-weight:600;border-radius:14px;cursor:pointer;font-family:'Sarabun',sans-serif;transition:.2s ease;color:#334155}
+    .tab-btn.active{background:var(--primary);color:#fff;box-shadow:0 10px 20px rgba(37,99,235,.2)}
+    .form{display:none}.form.active{display:block;animation:fade .22s ease}
+    @keyframes fade{from{opacity:.5;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+    .section-title{margin:0 0 6px;font-size:28px}.section-sub{margin:0 0 24px;color:var(--muted);line-height:1.6}
+    .field{margin-bottom:18px}.label{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:600}.req{color:#dc2626;font-weight:700}.hint{font-size:13px;color:var(--muted);font-weight:400}
+    .input,.select,.textarea{width:100%;border:1px solid var(--border);border-radius:16px;padding:15px 16px;font-size:16px;outline:none;transition:.2s ease;font-family:'Sarabun',sans-serif;background:#fff}
+    .textarea{min-height:96px;resize:vertical}
+    .input:focus,.select:focus,.textarea:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+    .btn,.primary-btn,.ghost-btn,.icon-btn{border:none;border-radius:18px;padding:14px 18px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;transition:.2s ease}
+    .btn,.primary-btn{background:var(--primary);color:#fff}.btn:hover,.primary-btn:hover{background:var(--primary-hover)} .btn:disabled,.primary-btn:disabled{opacity:.7;cursor:not-allowed}
+    .ghost-btn{background:#fff;color:#0f172a;border:1px solid var(--border)} .ghost-btn:hover{background:#f8fafc}
+    .ghost-btn.logout-btn{background:#dc2626;color:#fff;border-color:#dc2626}
+    .ghost-btn.logout-btn:hover{background:#b91c1c}
+    .ghost-btn.warning-btn{background:#f59e0b;color:#fff;border-color:#f59e0b}
+    .ghost-btn.warning-btn:hover{background:#d97706}
+    .ghost-btn.danger-btn{background:#dc2626;color:#fff;border-color:#dc2626}
+    .icon-btn{background:#fff;color:#334155;border:1px solid var(--border);width:42px;height:42px;padding:0;border-radius:12px}
+    .message{margin-top:16px;border-radius:16px;padding:14px 16px;font-size:15px;display:none;line-height:1.55;border:1px solid transparent}
+    .message.show{display:block}.message.error{background:#fef2f2;color:#991b1b;border-color:#fecaca}.message.success{background:#f0fdf4;color:#166534;border-color:#bbf7d0}.message.info{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+    .result-box{margin-top:20px;border:1px dashed #bfdbfe;background:#eff6ff;border-radius:18px;padding:16px;display:none}.result-box.show{display:block}.result-box code{word-break:break-word;white-space:pre-wrap;font-size:14px;color:#1e3a8a;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .footer-note{margin-top:20px;color:var(--muted);font-size:14px;text-align:center}
+
+    .app-shell{width:min(96vw,1760px);max-width:none;margin:0 auto;padding:18px 24px 28px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:28px;background:rgba(255,255,255,.96);border:1px solid rgba(255,255,255,.35);border-radius:32px;padding:26px 38px;box-shadow:var(--shadow)}
+    .brand-copy{display:flex;flex-direction:column;gap:10px;min-width:0;justify-content:center;max-width:1100px}
+    .brand h1{margin:0;font-size:24px;line-height:1.25}
+    .header-meta-row{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-top:2px;font-size:16px}
+    .top-meta-item{display:flex;flex-direction:row;align-items:center;gap:10px}.top-meta-item strong{display:block;margin:0;font-size:18px;color:#334155;line-height:1.2}.top-meta-item span{color:var(--primary);font-size:17px;line-height:1.35;font-weight:600}
+    .header-side{display:flex;flex-direction:column;gap:12px;align-items:flex-end;justify-content:flex-start;min-width:190px}
+    .nav-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .nav-btn{background:#fff;color:#334155;border:1px solid var(--border)}
+    .nav-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 10px 20px rgba(37,99,235,.18)}
+    .header-subtitle{margin-top:0;color:var(--muted);font-size:15px;line-height:1.5}
+    .grid{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;margin-top:18px;align-items:stretch}
+    .main{background:rgba(255,255,255,.95);border:1px solid rgba(255,255,255,.35);border-radius:28px;box-shadow:var(--shadow);padding:24px}
+    .section-view{display:none}.section-view.active{display:block}
+    .stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0}.stat{background:#fff;border:1px solid var(--border);border-radius:22px;padding:18px}.stat .label{display:block;margin:0;color:var(--muted);font-size:14px}.stat .value{margin-top:8px;font-size:34px;font-weight:800;color:#0f172a}
+    .toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}.search-wrap{display:flex;gap:10px;flex-wrap:wrap;flex:1}.search{max-width:420px}
+    .table-wrap{border:1px solid var(--border);border-radius:22px;background:#fff;overflow:auto}
+    table{width:100%;border-collapse:collapse} thead th{background:#f8fafc;padding:14px 12px;text-align:left;font-size:14px;border-bottom:1px solid var(--border);color:#475569} tbody td{padding:14px 12px;border-bottom:1px solid #eef2f7;vertical-align:top} tbody tr:hover{background:#fafcff}
+    .empty{text-align:center;color:var(--muted);padding:26px !important}.status{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;font-size:13px;font-weight:700}.status.active{background:#ecfdf5;color:#047857}.status.pause{background:#fff7ed;color:#c2410c}.status.inactive{background:#fef2f2;color:#b91c1c}
+    .badge{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;font-size:13px;font-weight:700}.badge.pending{background:#fff7ed;color:#c2410c}.badge.done{background:#ecfdf5;color:#047857}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .readonly-box{display:flex;align-items:center;min-height:52px;padding:12px 16px;border:1px solid var(--border);border-radius:16px;background:#f8fafc;color:#334155}
+    .soft-card{border:1px solid #dbeafe;background:#f8fbff;border-radius:18px;padding:14px 16px}.soft-card strong{display:block;font-size:14px;color:#1d4ed8;margin-bottom:4px}.soft-card span{display:block;color:#334155;line-height:1.6}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.56);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}.modal-backdrop.show{display:flex}.modal{width:min(920px,100%);background:#fff;border-radius:28px;overflow:hidden;box-shadow:0 30px 70px rgba(2,6,23,.35)}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border);background:#f8fbff}.modal-head h3{margin:0;font-size:26px}.modal-body{padding:22px 28px}.form-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:24px 18px}.modal .field{margin-bottom:0;padding-top:4px}.modal .field label{display:block;margin-bottom:10px;font-weight:600;line-height:1.35}.modal .input,.modal .select,.modal .textarea{width:100%}.modal .message{margin:0 0 18px 0}.modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:18px 24px;border-top:1px solid var(--border);background:#fcfdff}.span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-5{grid-column:span 5}.span-6{grid-column:span 6}.span-10{grid-column:span 10}
+    @media (max-width:1080px){.card{grid-template-columns:1fr}.hero{border-right:none;border-bottom:1px solid var(--border)}.features{grid-template-columns:1fr}.topbar{flex-direction:column;align-items:stretch}.header-side{min-width:0;align-items:flex-start}.nav-actions{justify-content:flex-start}}
+    @media (max-width:760px){.wrap{padding:14px}.hero,.panel,.main,.topbar{padding:22px}.section-title{font-size:24px}.hero p{font-size:16px}.stat-grid,.form-grid{grid-template-columns:1fr}.toolbar{align-items:stretch}.search{max-width:none}.modal-head h3{font-size:22px}.brand h1{font-size:22px}.header-side{min-width:0}.span-3,.span-4,.span-5,.span-6,.span-10{grid-column:span 1}}
+  </style>
+</head>
+<body>
+  <section id="loginView" class="wrap">
+    <div class="card">
+      <section class="hero">
+        <div>
+          <div class="eyebrow">📘 Training Phase 3</div>
+          <h1>ระบบบันทึกการสอนงานหน้าสาขา</h1>
+          <p>ไฟล์ทดสอบเฟสถัดไปสำหรับ “บันทึกการสอนงาน” และ “ประเมินผลย้อนหลัง” ใช้สิทธิ์สาขาเดิม และดึงข้อมูลพนักงานจาก EMPLOYEE_MASTER</p>
+          <div class="features">
+            <div class="feature"><strong>🧑‍🏫 บันทึกการสอนงาน</strong><span>เลือกพนักงาน แล้วระบบจะดึง Module ตามตำแหน่งให้อัตโนมัติ</span></div>
+            <div class="feature"><strong>📝 ประเมินผลย้อนหลัง</strong><span>ประเมินจากรายการสอนงานที่ยังไม่เคยถูกประเมิน</span></div>
+            <div class="feature"><strong>🔗 ใช้ Google Sheets เดิม</strong><span>อิงชีต MODULE_SUB, TRAINING_LOG, EVALUATION_LOG ตามโครงที่คุณส่งมา</span></div>
+            <div class="feature"><strong>🚀 ทดสอบแยกก่อนได้</strong><span>ใช้เป็นไฟล์เฟส 3 แยกก่อน แล้วค่อยรวมกับหน้าเดิมในรอบถัดไป</span></div>
+          </div>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="branch">เข้าสู่ระบบสาขา</button>
+          <button class="tab-btn" data-tab="admin">เข้าสู่ระบบ Admin</button>
+        </div>
+        <div class="form active" id="branchForm">
+          <h2 class="section-title">ล็อกอินสาขา</h2>
+          <p class="section-sub">กรอกรหัสสาขา 4 หลัก เพื่อเข้าสู่ระบบของสาขาคุณ</p>
+          <div class="field">
+            <label class="label" for="branchCode"><span>รหัสสาขา</span><span class="hint">4 หลัก</span></label>
+            <input id="branchCode" class="input" type="password" inputmode="numeric" maxlength="4" placeholder="เช่น 1001" />
+          </div>
+          <button id="branchBtn" class="btn">เข้าสู่ระบบสาขา</button>
+          <div id="branchMsg" class="message"></div>
+        </div>
+        <div class="form" id="adminForm">
+          <h2 class="section-title">ล็อกอิน Admin</h2>
+          <p class="section-sub">กรอกรหัสผู้ดูแล 6 หลัก</p>
+          <div class="field">
+            <label class="label" for="adminCode"><span>รหัส Admin</span><span class="hint">6 หลัก</span></label>
+            <input id="adminCode" class="input" type="password" inputmode="numeric" maxlength="6" placeholder="เช่น 123456" />
+          </div>
+          <button id="adminBtn" class="btn">เข้าสู่ระบบ Admin</button>
+          <div id="adminMsg" class="message"></div>
+        </div>
+        <div id="resultBox" class="result-box">
+          <strong>ข้อมูล session ที่บันทึกไว้ใน browser:</strong>
+          <code id="resultCode"></code>
+        </div>
+        <div class="footer-note">เวอร์ชันเฟส 3 แยกไฟล์: Training + Evaluation</div>
+      </section>
+    </div>
+  </section>
+
+  <section id="appView" class="hidden">
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-copy">
+            <h1>ระบบบันทึกการสอนงานหน้าสาขา <span id="branchNameInline" style="color:var(--primary)"></span></h1>
+            <div class="header-meta-row">
+              <div class="top-meta-item"><strong>สิทธิ์การใช้งาน</strong><span id="roleText">-</span></div>
+              <div class="top-meta-item"><strong>ผู้จัดการเขต</strong><span id="managerText">-</span></div>
+            </div>
+            <div class="header-subtitle">เฟสถัดไป: บันทึกการสอนงานและประเมินผลย้อนหลัง</div>
+          </div>
+        </div>
+        <div class="header-side">
+          <div class="nav-actions">
+            <button class="ghost-btn nav-btn active" id="navTraining">บันทึกการสอนงาน</button>
+            <button class="ghost-btn nav-btn" id="navEvaluation">ประเมินผล</button>
+            <button class="ghost-btn logout-btn" id="logoutBtn">ออกจากระบบ</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="grid">
+        <main class="main">
+          <section id="trainingSection" class="section-view active">
+            <div id="trainingMsg" class="message info show">กำลังโหลดข้อมูลการสอนงาน...</div>
+            <div class="stat-grid">
+              <div class="stat"><div class="label">รายการสอนทั้งหมด</div><div class="value" id="totalTrainingLogs">0</div></div>
+              <div class="stat"><div class="label">รอประเมิน</div><div class="value" id="pendingTrainingLogs">0</div></div>
+              <div class="stat"><div class="label">แสดงผลในตาราง</div><div class="value" id="visibleTrainingLogs">0</div></div>
+            </div>
+            <div class="toolbar">
+              <div class="search-wrap">
+                <input id="trainingSearchInput" class="input search" type="text" placeholder="ค้นหาพนักงาน / Module / หัวข้อย่อย / ผู้สอน" />
+              </div>
+              <div class="nav-actions">
+                <button class="ghost-btn" id="reloadTrainingBtn">รีเฟรชข้อมูล</button>
+                <button class="primary-btn" id="addTrainingBtn">+ บันทึกการสอนงาน</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:120px">วันที่สอน</th>
+                    <th>พนักงาน</th>
+                    <th>ตำแหน่ง</th>
+                    <th>Module หลัก</th>
+                    <th>หัวข้อย่อย</th>
+                    <th>ผู้สอน</th>
+                    <th>ผู้บันทึก</th>
+                    <th>สถานะประเมิน</th>
+                    <th>หมายเหตุ</th>
+                  </tr>
+                </thead>
+                <tbody id="trainingTableBody">
+                  <tr><td colspan="9" class="empty">ยังไม่มีข้อมูล</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="evaluationSection" class="section-view">
+            <div id="evaluationMsg" class="message info show">กำลังโหลดข้อมูลประเมินผล...</div>
+            <div class="stat-grid">
+              <div class="stat"><div class="label">ประเมินแล้วทั้งหมด</div><div class="value" id="totalEvaluations">0</div></div>
+              <div class="stat"><div class="label">ผลผ่าน</div><div class="value" id="passedEvaluations">0</div></div>
+              <div class="stat"><div class="label">แสดงผลในตาราง</div><div class="value" id="visibleEvaluations">0</div></div>
+            </div>
+            <div class="toolbar">
+              <div class="search-wrap">
+                <input id="evaluationSearchInput" class="input search" type="text" placeholder="ค้นหาพนักงาน / ผลประเมิน / ผู้ประเมิน" />
+              </div>
+              <div class="nav-actions">
+                <button class="ghost-btn" id="reloadEvaluationBtn">รีเฟรชข้อมูล</button>
+                <button class="primary-btn" id="addEvaluationBtn">+ บันทึกผลประเมิน</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:120px">วันที่ประเมิน</th>
+                    <th>พนักงาน</th>
+                    <th style="width:140px">ผลประเมิน</th>
+                    <th style="width:100px">คะแนน</th>
+                    <th>ผู้ประเมิน</th>
+                    <th style="width:160px">อ้างอิง Log</th>
+                    <th>หมายเหตุ</th>
+                  </tr>
+                </thead>
+                <tbody id="evaluationTableBody">
+                  <tr><td colspan="7" class="empty">ยังไม่มีข้อมูล</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </section>
+
+  <div class="modal-backdrop" id="trainingModal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>บันทึกการสอนงาน</h3>
+        <button class="icon-btn" id="closeTrainingModalBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="trainingModalMsg" class="message"></div>
+        <div class="form-grid">
+          <div class="field span-10">
+            <label for="trainingEmployeeSelect">พนักงาน <span class="req">*</span></label>
+            <select id="trainingEmployeeSelect" class="select">
+              <option value="">เลือกพนักงาน</option>
+            </select>
+          </div>
+          <div class="field span-5">
+            <label>รหัสพนักงาน</label>
+            <div id="trainingEmployeeCode" class="readonly-box">-</div>
+          </div>
+          <div class="field span-5">
+            <label>ตำแหน่ง</label>
+            <div id="trainingPositionName" class="readonly-box">-</div>
+          </div>
+          <div class="field span-5">
+            <label for="trainingModuleMain">Module หลัก <span class="req">*</span></label>
+            <select id="trainingModuleMain" class="select">
+              <option value="">เลือก Module หลัก</option>
+            </select>
+          </div>
+          <div class="field span-5">
+            <label for="trainingModuleSub">หัวข้อย่อย <span class="req">*</span></label>
+            <select id="trainingModuleSub" class="select">
+              <option value="">เลือกหัวข้อย่อย</option>
+            </select>
+          </div>
+          <div class="field span-5">
+            <label for="trainingDate">วันที่สอน <span class="req">*</span></label>
+            <input id="trainingDate" class="input" type="date">
+          </div>
+          <div class="field span-5">
+            <label for="trainerName">ผู้สอน <span class="req">*</span></label>
+            <input id="trainerName" class="input" type="text" placeholder="ชื่อผู้สอน">
+          </div>
+          <div class="field span-5">
+            <label for="trainingRecorderName">ผู้บันทึก <span class="req">*</span></label>
+            <input id="trainingRecorderName" class="input" type="text" placeholder="ชื่อผู้บันทึก">
+          </div>
+          <div class="field span-5">
+            <label for="trainingNote">หมายเหตุ</label>
+            <textarea id="trainingNote" class="textarea" placeholder="ข้อมูลเพิ่มเติม"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="ghost-btn danger-btn" id="cancelTrainingBtn">ยกเลิก</button>
+        <button type="button" class="primary-btn" id="saveTrainingBtn">บันทึกการสอนงาน</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="evaluationModal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>บันทึกผลประเมิน</h3>
+        <button class="icon-btn" id="closeEvaluationModalBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="evaluationModalMsg" class="message"></div>
+        <div class="form-grid">
+          <div class="field span-10">
+            <label for="evaluationTrainingSelect">เลือกรายการสอนงาน <span class="req">*</span></label>
+            <select id="evaluationTrainingSelect" class="select">
+              <option value="">เลือกรายการสอนงาน</option>
+            </select>
+          </div>
+          <div class="field span-10">
+            <div class="soft-card">
+              <strong>ข้อมูลรายการที่เลือก</strong>
+              <span id="evaluationTrainingSummary">-</span>
+            </div>
+          </div>
+          <div class="field span-4">
+            <label for="evaluationDate">วันที่ประเมิน <span class="req">*</span></label>
+            <input id="evaluationDate" class="input" type="date">
+          </div>
+          <div class="field span-3">
+            <label for="evaluationResult">ผลการประเมิน <span class="req">*</span></label>
+            <select id="evaluationResult" class="select">
+              <option value="">เลือกผลการประเมิน</option>
+              <option value="ผ่าน">ผ่าน</option>
+              <option value="ไม่ผ่าน">ไม่ผ่าน</option>
+              <option value="ต้องติดตาม">ต้องติดตาม</option>
+            </select>
+          </div>
+          <div class="field span-3">
+            <label for="evaluationScore">คะแนน</label>
+            <input id="evaluationScore" class="input" type="number" min="0" max="100" placeholder="0-100">
+          </div>
+          <div class="field span-5">
+            <label for="evaluatorName">ผู้ประเมิน <span class="req">*</span></label>
+            <input id="evaluatorName" class="input" type="text" placeholder="ชื่อผู้ประเมิน">
+          </div>
+          <div class="field span-5">
+            <label for="evaluationNote">หมายเหตุ</label>
+            <textarea id="evaluationNote" class="textarea" placeholder="เช่น ต้องฝึกซ้ำ / ผ่านตามเกณฑ์"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="ghost-btn danger-btn" id="cancelEvaluationBtn">ยกเลิก</button>
+        <button type="button" class="primary-btn" id="saveEvaluationBtn">บันทึกผลประเมิน</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbzNKzSb9VFCMmm_IBguvRSaG-oqCfTO0vhQqk3ikQei8GEXwM07U4mbiPvup0UXbX0x/exec';
+    const STORAGE_KEY = 'training_auth';
+
+    let auth = null;
+    let employees = [];
+    let trainingLogs = [];
+    let filteredTrainingLogs = [];
+    let evaluationLogs = [];
+    let filteredEvaluationLogs = [];
+    let moduleMainCache = {};
+    let moduleSubCache = {};
+
+    function $(id){ return document.getElementById(id); }
+    function onlyDigits(value, maxLength) { return String(value || '').replace(/\D/g, '').slice(0, maxLength); }
+    function showMessage(id, type, text) { const el = $(id); if (!el) return; el.className = `message show ${type}`; el.textContent = text; }
+    function hideMessage(id) { const el = $(id); if (!el) return; el.className = 'message'; el.textContent = ''; }
+    function setLoading(buttonId, loadingText, isLoading) { const btn = $(buttonId); if (!btn) return; btn.disabled = isLoading; btn.textContent = isLoading ? loadingText : btn.dataset.defaultText; }
+    function escapeHtml(text) { return String(text ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch])); }
+    function formatDate(value) { if (!value) return '-'; const d = new Date(value); if (isNaN(d.getTime())) return String(value).slice(0, 10); return d.toLocaleDateString('th-TH'); }
+    function getTodayISO() { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`; }
+
+    function saveSession(data) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...data, login_at: new Date().toISOString() }));
+      $('resultCode').textContent = localStorage.getItem(STORAGE_KEY);
+      $('resultBox').classList.add('show');
+      auth = parseSession();
+    }
+    function clearSession() { localStorage.removeItem(STORAGE_KEY); auth = null; }
+    function parseSession() { try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
+
+    function setActiveTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
+      $('branchForm').classList.toggle('active', tabName === 'branch');
+      $('adminForm').classList.toggle('active', tabName === 'admin');
+      hideMessage('branchMsg');
+      hideMessage('adminMsg');
+    }
+
+    function showLoginView() {
+      $('appView').classList.add('hidden');
+      $('loginView').classList.remove('hidden');
+    }
+    function showAppView() {
+      $('loginView').classList.add('hidden');
+      $('appView').classList.remove('hidden');
+      switchSection('training');
+    }
+    function switchSection(section) {
+      $('trainingSection').classList.toggle('active', section === 'training');
+      $('evaluationSection').classList.toggle('active', section === 'evaluation');
+      $('navTraining').classList.toggle('active', section === 'training');
+      $('navEvaluation').classList.toggle('active', section === 'evaluation');
+    }
+
+    function jsonpRequest(params) {
+      return new Promise((resolve, reject) => {
+        if (!API_BASE_URL || API_BASE_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL') {
+          reject(new Error('กรุณาใส่ Apps Script Web App URL ในตัวแปร API_BASE_URL ก่อน'));
+          return;
+        }
+        const callbackName = 'jsonp_cb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+        const script = document.createElement('script');
+        const query = new URLSearchParams({ ...params, callback: callbackName });
+        const cleanup = () => { delete window[callbackName]; if (script.parentNode) script.parentNode.removeChild(script); };
+        window[callbackName] = function(response) { cleanup(); resolve(response); };
+        script.onerror = function() { cleanup(); reject(new Error('เชื่อมต่อ API ไม่สำเร็จ')); };
+        script.src = `${API_BASE_URL}?${query.toString()}`;
+        document.body.appendChild(script);
+      });
+    }
+
+    async function handleBranchLogin() {
+      hideMessage('branchMsg');
+      const branchCode = onlyDigits($('branchCode').value, 4);
+      if (branchCode.length !== 4) return showMessage('branchMsg', 'error', 'กรุณากรอกรหัสสาขา 4 หลัก');
+      try {
+        setLoading('branchBtn', 'กำลังตรวจสอบ...', true);
+        const res = await jsonpRequest({ action: 'loginBranch', branchCode });
+        if (!res.ok) throw new Error(res.message || 'เข้าสู่ระบบไม่สำเร็จ');
+        saveSession(res);
+        showAppView();
+        await initialLoad();
+      } catch (err) {
+        showMessage('branchMsg', 'error', err.message || 'เกิดข้อผิดพลาด');
+      } finally {
+        setLoading('branchBtn', 'กำลังตรวจสอบ...', false);
+      }
+    }
+
+    async function handleAdminLogin() {
+      hideMessage('adminMsg');
+      const adminCode = onlyDigits($('adminCode').value, 6);
+      if (adminCode.length !== 6) return showMessage('adminMsg', 'error', 'กรุณากรอกรหัส Admin 6 หลัก');
+      try {
+        setLoading('adminBtn', 'กำลังตรวจสอบ...', true);
+        const res = await jsonpRequest({ action: 'loginAdmin', adminCode });
+        if (!res.ok) throw new Error(res.message || 'เข้าสู่ระบบไม่สำเร็จ');
+        saveSession(res);
+        showMessage('adminMsg', 'info', 'ไฟล์นี้เปิดใช้งานเฉพาะโหมดสาขาก่อนในเฟส 3');
+      } catch (err) {
+        showMessage('adminMsg', 'error', err.message || 'เกิดข้อผิดพลาด');
+      } finally {
+        setLoading('adminBtn', 'กำลังตรวจสอบ...', false);
+      }
+    }
+
+    function requireBranchSession() {
+      auth = parseSession();
+      if (!auth || !auth.ok || auth.role !== 'branch' || !auth.branch_code) return false;
+      $('branchNameInline').textContent = auth.branch_name || auth.branch_code || '';
+      $('roleText').textContent = 'Branch User';
+      $('managerText').textContent = auth.manager_name || auth.branch_name || '-';
+      return true;
+    }
+
+    function normalizeEmployee(row) {
+      return {
+        employee_id: row.employee_id || '',
+        employee_code: row.employee_code || '',
+        employee_name: row.employee_name || row.full_name || '',
+        position_id: row.position_id || '',
+        position_name: row.position_name || row.position || '',
+        status: row.status || 'ทำงาน'
+      };
+    }
+    function normalizeTraining(row) {
+      return {
+        log_id: row.log_id || '',
+        training_date: row.training_date || '',
+        branch_code: row.branch_code || '',
+        employee_id: row.employee_id || '',
+        employee_code: row.employee_code || '',
+        full_name: row.full_name || row.employee_name || '',
+        position_id: row.position_id || '',
+        position_name: row.position_name || '',
+        module_main_id: row.module_main_id || '',
+        module_main_name: row.module_main_name || '',
+        module_sub_id: row.module_sub_id || '',
+        module_sub_name: row.module_sub_name || '',
+        trainer_name: row.trainer_name || '',
+        recorder_name: row.recorder_name || row.created_by || '',
+        note: row.note || row.remark || ''
+      };
+    }
+    function normalizeEvaluation(row) {
+      return {
+        eval_id: row.eval_id || '',
+        log_id: row.log_id || '',
+        evaluation_date: row.evaluation_date || '',
+        branch_code: row.branch_code || '',
+        employee_id: row.employee_id || '',
+        full_name: row.full_name || row.employee_name || '',
+        result: row.result || '',
+        score: row.score || '',
+        evaluator_name: row.evaluator_name || '',
+        note: row.note || row.remark || ''
+      };
+    }
+
+    function setTrainingStats(list) {
+      const evaluatedIds = new Set(evaluationLogs.map(x => x.log_id));
+      $('totalTrainingLogs').textContent = trainingLogs.length;
+      $('pendingTrainingLogs').textContent = trainingLogs.filter(x => !evaluatedIds.has(x.log_id)).length;
+      $('visibleTrainingLogs').textContent = list.length;
+    }
+    function setEvaluationStats(list) {
+      $('totalEvaluations').textContent = evaluationLogs.length;
+      $('passedEvaluations').textContent = evaluationLogs.filter(x => x.result === 'ผ่าน').length;
+      $('visibleEvaluations').textContent = list.length;
+    }
+
+    async function loadEmployees() {
+      const res = await jsonpRequest({ action: 'getEmployeesByBranch', branchCode: auth.branch_code });
+      if (!res.ok) throw new Error(res.message || 'โหลดพนักงานไม่สำเร็จ');
+      employees = (Array.isArray(res.data) ? res.data : []).map(normalizeEmployee);
+    }
+
+    function getEvaluationByLogId(logId) { return evaluationLogs.find(item => item.log_id === logId) || null; }
+
+    function renderTrainingTable(list) {
+      const tbody = $('trainingTableBody');
+      setTrainingStats(list);
+      if (!list.length) return tbody.innerHTML = '<tr><td colspan="9" class="empty">ไม่พบข้อมูลการสอนงาน</td></tr>';
+      tbody.innerHTML = list.map(item => {
+        const evaluated = getEvaluationByLogId(item.log_id);
+        return `
+          <tr>
+            <td>${escapeHtml(formatDate(item.training_date))}</td>
+            <td><strong>${escapeHtml(item.full_name || '-')}</strong></td>
+            <td>${escapeHtml(item.position_name || '-')}</td>
+            <td>${escapeHtml(item.module_main_name || '-')}</td>
+            <td>${escapeHtml(item.module_sub_name || '-')}</td>
+            <td>${escapeHtml(item.trainer_name || '-')}</td>
+            <td>${escapeHtml(item.recorder_name || '-')}</td>
+            <td>${evaluated ? '<span class="badge done">ประเมินแล้ว</span>' : '<span class="badge pending">รอประเมิน</span>'}</td>
+            <td>${escapeHtml(item.note || '-')}</td>
+          </tr>`;
+      }).join('');
+    }
+
+    function renderEvaluationTable(list) {
+      const tbody = $('evaluationTableBody');
+      setEvaluationStats(list);
+      if (!list.length) return tbody.innerHTML = '<tr><td colspan="7" class="empty">ไม่พบข้อมูลประเมินผล</td></tr>';
+      tbody.innerHTML = list.map(item => `
+        <tr>
+          <td>${escapeHtml(formatDate(item.evaluation_date))}</td>
+          <td>${escapeHtml(item.full_name || '-')}</td>
+          <td><span class="status ${item.result === 'ผ่าน' ? 'active' : (item.result === 'ต้องติดตาม' ? 'pause' : 'inactive')}">${escapeHtml(item.result || '-')}</span></td>
+          <td>${escapeHtml(item.score || '-')}</td>
+          <td>${escapeHtml(item.evaluator_name || '-')}</td>
+          <td class="mono">${escapeHtml(item.log_id || '-')}</td>
+          <td>${escapeHtml(item.note || '-')}</td>
+        </tr>`).join('');
+    }
+
+    function applyTrainingFilters() {
+      const q = $('trainingSearchInput').value.trim().toLowerCase();
+      filteredTrainingLogs = trainingLogs.filter(item => [item.employee_code, item.full_name, item.position_name, item.module_main_name, item.module_sub_name, item.trainer_name, item.recorder_name].join(' ').toLowerCase().includes(q) || !q);
+      renderTrainingTable(filteredTrainingLogs);
+    }
+    function applyEvaluationFilters() {
+      const q = $('evaluationSearchInput').value.trim().toLowerCase();
+      filteredEvaluationLogs = evaluationLogs.filter(item => [item.full_name, item.result, item.evaluator_name, item.log_id, item.note].join(' ').toLowerCase().includes(q) || !q);
+      renderEvaluationTable(filteredEvaluationLogs);
+    }
+
+    async function loadTrainingLogs(showMsg = true) {
+      if (showMsg) showMessage('trainingMsg', 'info', 'กำลังโหลดข้อมูลการสอนงาน...');
+      const res = await jsonpRequest({ action: 'getTrainingLogsByBranch', branchCode: auth.branch_code });
+      if (!res.ok) throw new Error(res.message || 'โหลดรายการสอนงานไม่สำเร็จ');
+      trainingLogs = (Array.isArray(res.data) ? res.data : []).map(normalizeTraining);
+      applyTrainingFilters();
+      if (showMsg) showMessage('trainingMsg', 'success', `โหลดรายการสอนงานสำเร็จ ${trainingLogs.length} รายการ`);
+    }
+    async function loadEvaluationLogs(showMsg = true) {
+      if (showMsg) showMessage('evaluationMsg', 'info', 'กำลังโหลดข้อมูลประเมินผล...');
+      const res = await jsonpRequest({ action: 'getEvaluationLogsByBranch', branchCode: auth.branch_code });
+      if (!res.ok) throw new Error(res.message || 'โหลดผลประเมินไม่สำเร็จ');
+      evaluationLogs = (Array.isArray(res.data) ? res.data : []).map(normalizeEvaluation);
+      applyEvaluationFilters();
+      if (showMsg) showMessage('evaluationMsg', 'success', `โหลดผลประเมินสำเร็จ ${evaluationLogs.length} รายการ`);
+    }
+
+    function populateTrainingEmployeeOptions(selectedId = '') {
+      const opts = ['<option value="">เลือกพนักงาน</option>'];
+      employees.filter(item => item.status !== 'deleted').forEach(item => {
+        const selected = item.employee_id === selectedId ? ' selected' : '';
+        opts.push(`<option value="${escapeHtml(item.employee_id)}"${selected}>${escapeHtml(item.employee_name || '-')}</option>`);
+      });
+      $('trainingEmployeeSelect').innerHTML = opts.join('');
+      $('trainingEmployeeSelect').value = selectedId;
+    }
+
+    function getEmployeeById(employeeId) { return employees.find(item => item.employee_id === employeeId) || null; }
+    async function loadModuleMainOptions(positionId) {
+      if (!positionId) { $('trainingModuleMain').innerHTML = '<option value="">เลือก Module หลัก</option>'; return; }
+      if (!moduleMainCache[positionId]) {
+        const res = await jsonpRequest({ action: 'getModulesByPosition', positionId });
+        if (!res.ok) throw new Error(res.message || 'โหลด Module หลักไม่สำเร็จ');
+        moduleMainCache[positionId] = Array.isArray(res.data) ? res.data : [];
+      }
+      const opts = ['<option value="">เลือก Module หลัก</option>'];
+      moduleMainCache[positionId].forEach(item => opts.push(`<option value="${escapeHtml(item.module_main_id)}">${escapeHtml(item.module_main_name || '-')}</option>`));
+      $('trainingModuleMain').innerHTML = opts.join('');
+    }
+    async function loadModuleSubOptions(positionId, moduleMainId) {
+      if (!positionId || !moduleMainId) { $('trainingModuleSub').innerHTML = '<option value="">เลือกหัวข้อย่อย</option>'; return; }
+      const cacheKey = `${positionId}__${moduleMainId}`;
+      if (!moduleSubCache[cacheKey]) {
+        const res = await jsonpRequest({ action: 'getModuleSubs', positionId, moduleMainId });
+        if (!res.ok) throw new Error(res.message || 'โหลดหัวข้อย่อยไม่สำเร็จ');
+        moduleSubCache[cacheKey] = Array.isArray(res.data) ? res.data : [];
+      }
+      const opts = ['<option value="">เลือกหัวข้อย่อย</option>'];
+      moduleSubCache[cacheKey].forEach(item => opts.push(`<option value="${escapeHtml(item.module_sub_id)}">${escapeHtml(item.module_sub_name || '-')}</option>`));
+      $('trainingModuleSub').innerHTML = opts.join('');
+    }
+
+    async function handleTrainingEmployeeChange() {
+      hideMessage('trainingModalMsg');
+      const employee = getEmployeeById($('trainingEmployeeSelect').value);
+      $('trainingEmployeeCode').textContent = employee ? (employee.employee_code || '-') : '-';
+      $('trainingPositionName').textContent = employee ? (employee.position_name || '-') : '-';
+      try {
+        if (employee) {
+          await loadModuleMainOptions(employee.position_id || '');
+        } else {
+          $('trainingModuleMain').innerHTML = '<option value="">เลือก Module หลัก</option>';
+        }
+        $('trainingModuleSub').innerHTML = '<option value="">เลือกหัวข้อย่อย</option>';
+      } catch (err) {
+        showMessage('trainingModalMsg', 'error', err.message || 'โหลด Module ไม่สำเร็จ');
+      }
+    }
+    async function handleTrainingModuleMainChange() {
+      hideMessage('trainingModalMsg');
+      const employee = getEmployeeById($('trainingEmployeeSelect').value);
+      try {
+        await loadModuleSubOptions(employee ? employee.position_id : '', $('trainingModuleMain').value);
+      } catch (err) {
+        showMessage('trainingModalMsg', 'error', err.message || 'โหลดหัวข้อย่อยไม่สำเร็จ');
+      }
+    }
+
+    function openTrainingModal() {
+      hideMessage('trainingModalMsg');
+      $('trainingModal').classList.add('show');
+      $('trainingDate').value = getTodayISO();
+      $('trainerName').value = auth?.manager_name || '';
+      $('trainingRecorderName').value = '';
+      $('trainingNote').value = '';
+      $('trainingEmployeeCode').textContent = '-';
+      $('trainingPositionName').textContent = '-';
+      $('trainingModuleMain').innerHTML = '<option value="">เลือก Module หลัก</option>';
+      $('trainingModuleSub').innerHTML = '<option value="">เลือกหัวข้อย่อย</option>';
+      populateTrainingEmployeeOptions();
+    }
+    function closeTrainingModal() { $('trainingModal').classList.remove('show'); }
+
+    function buildTrainingPayload() {
+      const employee = getEmployeeById($('trainingEmployeeSelect').value);
+      return {
+        branchCode: auth?.branch_code || '',
+        employeeId: employee?.employee_id || '',
+        trainingDate: $('trainingDate').value.trim(),
+        moduleMainId: $('trainingModuleMain').value.trim(),
+        moduleSubId: $('trainingModuleSub').value.trim(),
+        trainerName: $('trainerName').value.trim(),
+        recorderName: $('trainingRecorderName').value.trim(),
+        note: $('trainingNote').value.trim()
+      };
+    }
+    function validateTrainingPayload(payload) {
+      if (!payload.employeeId) return 'กรุณาเลือกพนักงาน';
+      if (!payload.trainingDate) return 'กรุณาเลือกวันที่สอน';
+      if (!payload.moduleMainId) return 'กรุณาเลือก Module หลัก';
+      if (!payload.moduleSubId) return 'กรุณาเลือกหัวข้อย่อย';
+      if (!payload.trainerName) return 'กรุณากรอกผู้สอน';
+      if (!payload.recorderName) return 'กรุณากรอกผู้บันทึก';
+      return '';
+    }
+    async function saveTrainingLog() {
+      hideMessage('trainingModalMsg');
+      const payload = buildTrainingPayload();
+      const error = validateTrainingPayload(payload);
+      if (error) return showMessage('trainingModalMsg', 'error', error);
+      const btn = $('saveTrainingBtn');
+      const oldText = btn.textContent;
+      btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
+      try {
+        const res = await jsonpRequest({ action: 'addTrainingLog', ...payload });
+        if (!res.ok) throw new Error(res.message || 'บันทึกการสอนงานไม่สำเร็จ');
+        closeTrainingModal();
+        await loadTrainingLogs(false);
+        await loadEvaluationLogs(false);
+        showMessage('trainingMsg', 'success', 'บันทึกการสอนงานสำเร็จ');
+      } catch (err) {
+        showMessage('trainingModalMsg', 'error', err.message || 'เกิดข้อผิดพลาดในการบันทึกการสอนงาน');
+      } finally {
+        btn.disabled = false; btn.textContent = oldText;
+      }
+    }
+
+    function getPendingTrainingLogs() {
+      const doneIds = new Set(evaluationLogs.map(item => item.log_id));
+      return trainingLogs.filter(item => !doneIds.has(item.log_id));
+    }
+    function getTrainingLogById(logId) { return trainingLogs.find(item => item.log_id === logId) || null; }
+
+    function populateEvaluationTrainingOptions() {
+      const opts = ['<option value="">เลือกรายการสอนงาน</option>'];
+      getPendingTrainingLogs().forEach(item => {
+        const label = `${item.training_date || '-'} • ${item.full_name || '-'} • ${item.module_sub_name || '-'}`;
+        opts.push(`<option value="${escapeHtml(item.log_id)}">${escapeHtml(label)}</option>`);
+      });
+      $('evaluationTrainingSelect').innerHTML = opts.join('');
+    }
+    function handleEvaluationTrainingChange() {
+      const item = getTrainingLogById($('evaluationTrainingSelect').value);
+      $('evaluationTrainingSummary').textContent = item
+        ? `${item.training_date || '-'} | ${item.full_name || '-'} | ${item.position_name || '-'} | ${item.module_main_name || '-'} > ${item.module_sub_name || '-'}`
+        : '-';
+    }
+    function openEvaluationModal() {
+      hideMessage('evaluationModalMsg');
+      $('evaluationModal').classList.add('show');
+      $('evaluationDate').value = getTodayISO();
+      $('evaluationResult').value = '';
+      $('evaluationScore').value = '';
+      $('evaluatorName').value = auth?.manager_name || '';
+      $('evaluationNote').value = '';
+      $('evaluationTrainingSummary').textContent = '-';
+      populateEvaluationTrainingOptions();
+      if (!getPendingTrainingLogs().length) showMessage('evaluationModalMsg', 'info', 'ขณะนี้ไม่มีรายการสอนงานที่รอประเมิน');
+    }
+    function closeEvaluationModal() { $('evaluationModal').classList.remove('show'); }
+    function buildEvaluationPayload() {
+      return {
+        branchCode: auth?.branch_code || '',
+        logId: $('evaluationTrainingSelect').value.trim(),
+        evaluationDate: $('evaluationDate').value.trim(),
+        result: $('evaluationResult').value.trim(),
+        score: $('evaluationScore').value.trim(),
+        evaluatorName: $('evaluatorName').value.trim(),
+        note: $('evaluationNote').value.trim()
+      };
+    }
+    function validateEvaluationPayload(payload) {
+      if (!payload.logId) return 'กรุณาเลือกรายการสอนงาน';
+      if (!payload.evaluationDate) return 'กรุณาเลือกวันที่ประเมิน';
+      if (!payload.result) return 'กรุณาเลือกผลการประเมิน';
+      if (!payload.evaluatorName) return 'กรุณากรอกผู้ประเมิน';
+      if (payload.score && (Number(payload.score) < 0 || Number(payload.score) > 100)) return 'คะแนนต้องอยู่ระหว่าง 0-100';
+      return '';
+    }
+    async function saveEvaluation() {
+      hideMessage('evaluationModalMsg');
+      const payload = buildEvaluationPayload();
+      const error = validateEvaluationPayload(payload);
+      if (error) return showMessage('evaluationModalMsg', 'error', error);
+      const btn = $('saveEvaluationBtn');
+      const oldText = btn.textContent;
+      btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
+      try {
+        const res = await jsonpRequest({ action: 'addEvaluation', ...payload });
+        if (!res.ok) throw new Error(res.message || 'บันทึกผลประเมินไม่สำเร็จ');
+        closeEvaluationModal();
+        await loadEvaluationLogs(false);
+        await loadTrainingLogs(false);
+        showMessage('evaluationMsg', 'success', 'บันทึกผลประเมินสำเร็จ');
+      } catch (err) {
+        showMessage('evaluationModalMsg', 'error', err.message || 'เกิดข้อผิดพลาดในการบันทึกผลประเมิน');
+      } finally {
+        btn.disabled = false; btn.textContent = oldText;
+      }
+    }
+
+    async function initialLoad() {
+      if (!requireBranchSession()) { showLoginView(); return; }
+      try {
+        await loadEmployees();
+        await loadTrainingLogs(false);
+        await loadEvaluationLogs(false);
+        populateTrainingEmployeeOptions();
+        populateEvaluationTrainingOptions();
+        showMessage('trainingMsg', 'success', `พร้อมใช้งาน ${trainingLogs.length} รายการ`);
+        showMessage('evaluationMsg', 'success', `พร้อมใช้งาน ${evaluationLogs.length} รายการ`);
+      } catch (err) {
+        showMessage('trainingMsg', 'error', err.message || 'โหลดข้อมูลไม่สำเร็จ');
+        showMessage('evaluationMsg', 'error', err.message || 'โหลดข้อมูลไม่สำเร็จ');
+      }
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => setActiveTab(btn.dataset.tab)));
+    $('branchCode').addEventListener('input', e => e.target.value = onlyDigits(e.target.value, 4));
+    $('adminCode').addEventListener('input', e => e.target.value = onlyDigits(e.target.value, 6));
+    $('branchBtn').dataset.defaultText = 'เข้าสู่ระบบสาขา';
+    $('adminBtn').dataset.defaultText = 'เข้าสู่ระบบ Admin';
+    $('branchBtn').addEventListener('click', handleBranchLogin);
+    $('adminBtn').addEventListener('click', handleAdminLogin);
+    $('branchCode').addEventListener('keydown', e => { if (e.key === 'Enter') handleBranchLogin(); });
+    $('adminCode').addEventListener('keydown', e => { if (e.key === 'Enter') handleAdminLogin(); });
+    $('navTraining').addEventListener('click', () => switchSection('training'));
+    $('navEvaluation').addEventListener('click', () => switchSection('evaluation'));
+    $('logoutBtn').addEventListener('click', () => { clearSession(); showLoginView(); });
+
+    $('trainingSearchInput').addEventListener('input', applyTrainingFilters);
+    $('evaluationSearchInput').addEventListener('input', applyEvaluationFilters);
+    $('reloadTrainingBtn').addEventListener('click', async () => { await loadTrainingLogs(); await loadEvaluationLogs(false); });
+    $('reloadEvaluationBtn').addEventListener('click', async () => { await loadEvaluationLogs(); await loadTrainingLogs(false); });
+    $('addTrainingBtn').addEventListener('click', openTrainingModal);
+    $('addEvaluationBtn').addEventListener('click', openEvaluationModal);
+
+    $('closeTrainingModalBtn').addEventListener('click', closeTrainingModal);
+    $('cancelTrainingBtn').addEventListener('click', closeTrainingModal);
+    $('trainingModal').addEventListener('click', e => { if (e.target.id === 'trainingModal') closeTrainingModal(); });
+    $('trainingEmployeeSelect').addEventListener('change', handleTrainingEmployeeChange);
+    $('trainingModuleMain').addEventListener('change', handleTrainingModuleMainChange);
+    $('saveTrainingBtn').addEventListener('click', saveTrainingLog);
+
+    $('closeEvaluationModalBtn').addEventListener('click', closeEvaluationModal);
+    $('cancelEvaluationBtn').addEventListener('click', closeEvaluationModal);
+    $('evaluationModal').addEventListener('click', e => { if (e.target.id === 'evaluationModal') closeEvaluationModal(); });
+    $('evaluationTrainingSelect').addEventListener('change', handleEvaluationTrainingChange);
+    $('saveEvaluationBtn').addEventListener('click', saveEvaluation);
+
+    (function init(){
+      const session = parseSession();
+      if (session && session.ok && session.role === 'branch' && session.branch_code) {
+        showAppView();
+        initialLoad();
+      } else {
+        showLoginView();
+      }
+    })();
+  </script>
+</body>
+</html>
