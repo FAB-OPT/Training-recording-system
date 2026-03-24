@@ -354,7 +354,7 @@
           <div class="field span-10">
             <div class="soft-card">
               <strong>ข้อสอบ 4 ตัวเลือก</strong>
-              <span id="evaluationQuizHint">เลือกรายการสอนงานก่อน ระบบจะดึงข้อสอบตามหัวข้อย่อยให้อัตโนมัติ</span>
+              <span id="evaluationQuizHint">เลือกรายการสอนงานก่อน ระบบจะดึงข้อสอบตาม Module หลัก ให้อัตโนมัติ</span>
             </div>
           </div>
           <div class="field span-10">
@@ -392,8 +392,7 @@
     let moduleMainCache = {};
     let moduleSubCache = {};
     let quizRows = [];
-    let quizCacheBySub = {};
-    let quizCacheByMain = {};
+        let quizCacheByMain = {};
     let currentEvaluationQuiz = [];
     let currentQuizPassScore = 80;
     let trainingFormReady = false;
@@ -637,21 +636,12 @@
 
     function buildQuizIndexes(rows) {
       quizRows = (Array.isArray(rows) ? rows : []).map(normalizeQuizRow).filter(item => item.question_text);
-      quizCacheBySub = {};
       quizCacheByMain = {};
       quizRows.forEach(item => {
-        const subId = String(item.module_sub_id || '').trim();
         const mainId = String(item.module_main_id || '').trim();
-        if (subId) {
-          if (!quizCacheBySub[subId]) quizCacheBySub[subId] = [];
-          quizCacheBySub[subId].push(item);
-        } else if (mainId) {
-          if (!quizCacheByMain[mainId]) quizCacheByMain[mainId] = [];
-          quizCacheByMain[mainId].push(item);
-        }
-      });
-      Object.keys(quizCacheBySub).forEach(key => {
-        quizCacheBySub[key] = sortByOrderThenName(quizCacheBySub[key], 'question_text');
+        if (!mainId) return;
+        if (!quizCacheByMain[mainId]) quizCacheByMain[mainId] = [];
+        quizCacheByMain[mainId].push(item);
       });
       Object.keys(quizCacheByMain).forEach(key => {
         quizCacheByMain[key] = sortByOrderThenName(quizCacheByMain[key], 'question_text');
@@ -660,10 +650,8 @@
 
     function getQuizQuestionsForTraining(item) {
       if (!item) return [];
-      const subId = String(item.module_sub_id || '').trim();
       const mainId = String(item.module_main_id || '').trim();
-      const subRows = quizCacheBySub[subId] || [];
-      return subRows.length ? subRows : (quizCacheByMain[mainId] || []);
+      return quizCacheByMain[mainId] || [];
     }
 
     function getQuizSelectedAnswer(index) {
@@ -680,7 +668,7 @@
       $('evaluationScore').readOnly = false;
       $('evaluationScore').placeholder = '0-100';
       $('quizContainer').innerHTML = '<div class="quiz-empty">ยังไม่ได้เลือกรายการสอนงาน</div>';
-      $('evaluationQuizHint').textContent = 'เลือกรายการสอนงานก่อน ระบบจะดึงข้อสอบตามหัวข้อย่อยให้อัตโนมัติ';
+      $('evaluationQuizHint').textContent = 'เลือกรายการสอนงานก่อน ระบบจะดึงข้อสอบตาม Module หลัก ให้อัตโนมัติ';
     }
 
     function renderEvaluationQuiz(item) {
@@ -700,8 +688,8 @@
       if (!currentEvaluationQuiz.length) {
         $('evaluationScore').readOnly = false;
         $('evaluationScore').placeholder = 'กรอกคะแนนเอง 0-100';
-        hint.textContent = 'หัวข้อนี้ยังไม่ได้ผูกข้อสอบไว้ สามารถกรอกคะแนนเองได้';
-        box.innerHTML = '<div class="quiz-empty">ยังไม่มีข้อสอบ 4 ตัวเลือกสำหรับหัวข้อนี้</div>';
+        hint.textContent = 'Module หลักนี้ยังไม่ได้ผูกข้อสอบไว้ สามารถกรอกคะแนนเองได้';
+        box.innerHTML = '<div class="quiz-empty">ยังไม่มีข้อสอบ 4 ตัวเลือกสำหรับ Module หลักนี้</div>';
         return;
       }
 
@@ -710,7 +698,7 @@
       hint.textContent = `ข้อสอบ ${currentEvaluationQuiz.length} ข้อ • เกณฑ์ผ่าน ${currentQuizPassScore} คะแนน`;
       box.innerHTML = `
         <div class="quiz-meta">
-          <span class="quiz-chip">หัวข้อ ${escapeHtml(item.module_sub_name || '-')}</span>
+          <span class="quiz-chip">Module หลัก ${escapeHtml(item.module_main_name || '-')}</span>
           <span class="quiz-chip">จำนวนข้อ ${currentEvaluationQuiz.length}</span>
         </div>
         <div class="quiz-list">
