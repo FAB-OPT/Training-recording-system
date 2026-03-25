@@ -1,0 +1,2313 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ระบบบันทึกการสอนงานหน้าสาขา - หน้าเดียว Training + Evaluation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg1:#0f172a;--bg2:#1e293b;--text:#0f172a;--muted:#64748b;--primary:#2563eb;--primary-hover:#1d4ed8;
+      --border:#e2e8f0;--shadow:0 20px 60px rgba(15,23,42,.18);--white:#fff;--success:#16a34a;--danger:#dc2626;
+      --soft:#f8fafc;--warning:#f59e0b;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Sarabun',sans-serif;background:
+      radial-gradient(circle at top left, rgba(37,99,235,.25), transparent 35%),
+      radial-gradient(circle at bottom right, rgba(14,165,233,.22), transparent 35%),
+      linear-gradient(135deg, var(--bg1), var(--bg2));min-height:100vh;color:var(--text)}
+    .hidden{display:none !important}
+    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{width:100%;max-width:1120px;background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.35);border-radius:32px;box-shadow:var(--shadow);overflow:hidden;display:grid;grid-template-columns:1.05fr .95fr}
+    .hero{padding:48px;background:linear-gradient(180deg, rgba(37,99,235,.08), rgba(255,255,255,.02)), #f8fbff;border-right:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;gap:24px}
+    .eyebrow,.chip{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:#dbeafe;color:#1d4ed8;font-weight:600;width:max-content;font-size:14px}
+    .hero h1{margin:14px 0 10px;font-size:clamp(30px,4vw,46px);line-height:1.12}
+    .hero p{margin:0;color:var(--muted);font-size:18px;line-height:1.65}
+    .features{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:18px}
+    .feature{background:#fff;border:1px solid var(--border);border-radius:20px;padding:16px}
+    .feature strong{display:block;font-size:16px;margin-bottom:6px}.feature span{color:var(--muted);font-size:14px;line-height:1.5}
+    .panel{padding:34px;display:flex;flex-direction:column;justify-content:center;background:#fff}
+    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px;background:#f8fafc;border:1px solid var(--border);padding:8px;border-radius:18px}
+    .tab-btn{border:none;background:transparent;padding:14px 16px;font-size:16px;font-weight:600;border-radius:14px;cursor:pointer;font-family:'Sarabun',sans-serif;transition:.2s ease;color:#334155}
+    .tab-btn.active{background:var(--primary);color:#fff;box-shadow:0 10px 20px rgba(37,99,235,.2)}
+    .form{display:none}.form.active{display:block;animation:fade .22s ease}
+    @keyframes fade{from{opacity:.5;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+    .section-title{margin:0 0 6px;font-size:28px}.section-sub{margin:0 0 24px;color:var(--muted);line-height:1.6}
+    .field{margin-bottom:18px}.label{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:600}.req{color:#dc2626;font-weight:700}.hint{font-size:13px;color:var(--muted);font-weight:400}
+    .input,.select,.textarea{width:100%;border:1px solid var(--border);border-radius:16px;padding:15px 16px;font-size:16px;outline:none;transition:.2s ease;font-family:'Sarabun',sans-serif;background:#fff}
+    .textarea{min-height:96px;resize:vertical}
+    .input:focus,.select:focus,.textarea:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+    .btn,.primary-btn,.ghost-btn,.icon-btn{border:none;border-radius:18px;padding:14px 18px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;transition:.2s ease}
+    .btn,.primary-btn{background:var(--primary);color:#fff}.btn:hover,.primary-btn:hover{background:var(--primary-hover)} .btn:disabled,.primary-btn:disabled{opacity:.7;cursor:not-allowed}
+    .ghost-btn{background:#fff;color:#0f172a;border:1px solid var(--border)} .ghost-btn:hover{background:#f8fafc}
+    .ghost-btn.logout-btn{background:#dc2626;color:#fff;border-color:#dc2626}
+    .ghost-btn.logout-btn:hover{background:#b91c1c}
+    .ghost-btn.warning-btn{background:#f59e0b;color:#fff;border-color:#f59e0b}
+    .ghost-btn.warning-btn:hover{background:#d97706}
+    .ghost-btn.danger-btn{background:#dc2626;color:#fff;border-color:#dc2626}
+    .icon-btn{background:#fff;color:#334155;border:1px solid var(--border);width:42px;height:42px;padding:0;border-radius:12px}
+    .message{margin-top:16px;border-radius:16px;padding:14px 16px;font-size:15px;display:none;line-height:1.55;border:1px solid transparent}
+    .message.show{display:block}.message.error{background:#fef2f2;color:#991b1b;border-color:#fecaca}.message.success{background:#f0fdf4;color:#166534;border-color:#bbf7d0}.message.info{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+    .result-box{margin-top:20px;border:1px dashed #bfdbfe;background:#eff6ff;border-radius:18px;padding:16px;display:none}.result-box.show{display:block}.result-box code{word-break:break-word;white-space:pre-wrap;font-size:14px;color:#1e3a8a;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .footer-note{margin-top:20px;color:var(--muted);font-size:14px;text-align:center}
+
+    .app-shell{width:min(96vw,1760px);max-width:none;margin:0 auto;padding:18px 24px 28px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:28px;background:rgba(255,255,255,.96);border:1px solid rgba(255,255,255,.35);border-radius:32px;padding:26px 38px;box-shadow:var(--shadow)}
+    .brand-copy{display:flex;flex-direction:column;gap:10px;min-width:0;justify-content:center;max-width:1100px}
+    .brand h1{margin:0;font-size:24px;line-height:1.25}
+    .header-meta-row{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-top:2px;font-size:16px}
+    .top-meta-item{display:flex;flex-direction:row;align-items:center;gap:10px}.top-meta-item strong{display:block;margin:0;font-size:18px;color:#334155;line-height:1.2}.top-meta-item span{color:var(--primary);font-size:17px;line-height:1.35;font-weight:600}
+    .header-side{display:flex;flex-direction:column;gap:12px;align-items:flex-end;justify-content:flex-start;min-width:190px}
+    .nav-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .nav-btn{background:#fff;color:#334155;border:1px solid var(--border)}
+    .nav-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 10px 20px rgba(37,99,235,.18)}
+    .header-subtitle{margin-top:0;color:var(--muted);font-size:15px;line-height:1.5}
+    .grid{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;margin-top:18px;align-items:stretch}
+    .main{background:rgba(255,255,255,.95);border:1px solid rgba(255,255,255,.35);border-radius:28px;box-shadow:var(--shadow);padding:24px}
+    .section-view{display:none}.section-view.active{display:block}
+    .stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0}.stat{background:#fff;border:1px solid var(--border);border-radius:22px;padding:18px}.stat .label{display:block;margin:0;color:var(--muted);font-size:14px}.stat .value{margin-top:8px;font-size:34px;font-weight:800;color:#0f172a}
+    .toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}.search-wrap{display:flex;gap:10px;flex-wrap:wrap;flex:1}.search{max-width:420px}
+    .table-wrap{border:1px solid var(--border);border-radius:22px;background:#fff;overflow:auto}
+    table{width:100%;border-collapse:collapse}
+    thead th{background:#f8fafc;padding:14px 12px;text-align:center;font-size:14px;border-bottom:1px solid var(--border);color:#475569;vertical-align:middle}
+    thead th.action-col, tbody td.action-col{text-align:center;white-space:nowrap}
+    tbody td{padding:14px 12px;border-bottom:1px solid #eef2f7;vertical-align:middle;text-align:center}
+    tbody td strong{display:inline-block}
+    tbody tr:hover{background:#fafcff}
+    .empty{text-align:center;color:var(--muted);padding:26px !important}.status{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;font-size:13px;font-weight:700}.status.active{background:#ecfdf5;color:#047857}.status.pause{background:#fff7ed;color:#c2410c}.status.inactive{background:#fef2f2;color:#b91c1c}
+    .badge{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;font-size:13px;font-weight:700}.badge.pending{background:#fff7ed;color:#c2410c}.badge.done{background:#ecfdf5;color:#047857}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .readonly-box{display:flex;align-items:center;min-height:52px;padding:12px 16px;border:1px solid var(--border);border-radius:16px;background:#f8fafc;color:#334155}
+    .soft-card{border:1px solid #dbeafe;background:#f8fbff;border-radius:18px;padding:14px 16px}.soft-card strong{display:block;font-size:14px;color:#1d4ed8;margin-bottom:4px}.soft-card span{display:block;color:#334155;line-height:1.6}.section-spacer{height:12px}.section-block-title{margin:26px 0 8px;font-size:24px}.section-block-sub{margin:0 0 12px;color:var(--muted);line-height:1.6}.cta-card{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 20px;border:1px solid #bfdbfe;background:#eff6ff;border-radius:22px;margin:18px 0 4px}.cta-copy strong{display:block;color:#1d4ed8;font-size:17px;margin-bottom:4px}.cta-copy span{display:block;color:#334155;line-height:1.5}.small-btn{padding:10px 14px;border-radius:14px;font-size:14px}.inline-eval-btn,.inline-edit-training-btn{white-space:nowrap}.action-stack{display:flex;gap:8px;flex-wrap:nowrap;justify-content:center;align-items:center}.action-stack .small-btn{min-width:84px}.hidden-input{display:none}.quiz-box{border:1px solid #dbeafe;background:#f8fbff;border-radius:18px;padding:16px}.quiz-empty{color:var(--muted);line-height:1.7}.quiz-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}.quiz-chip{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:#dbeafe;color:#1d4ed8;font-size:13px;font-weight:700}.quiz-list{display:grid;gap:14px}.quiz-item{border:1px solid #dbeafe;background:#fff;border-radius:18px;padding:16px}.quiz-qhead{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}.quiz-qindex{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:32px;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-weight:800}.quiz-qtext{font-weight:600;line-height:1.6;color:#0f172a}.choice-list{display:grid;gap:10px}.choice-option{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:#fff;cursor:pointer;transition:.18s ease}.choice-option:hover{border-color:#93c5fd;background:#f8fbff}.choice-option input{margin-top:3px}.choice-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;background:#f1f5f9;color:#334155;font-weight:800;font-size:13px;flex:0 0 auto}.choice-text{line-height:1.55;color:#334155}.score-readonly{background:#eff6ff;font-weight:700}.field-note{margin-top:8px;color:var(--muted);font-size:13px;line-height:1.5}.multi-select-box{display:grid;gap:10px;max-height:260px;overflow:auto;padding:10px;border:1px solid var(--border);border-radius:16px;background:#fff}.multi-select-empty{color:var(--muted);padding:8px 4px;line-height:1.6}.multi-select-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:14px;background:#fff;cursor:pointer;transition:.18s ease}.multi-select-item:hover{border-color:#93c5fd;background:#f8fbff}.multi-select-item input{margin-top:3px}.multi-select-title{font-weight:600;color:#0f172a}.multi-select-sub{color:var(--muted);font-size:13px}.readonly-box.muted{color:var(--muted)}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.56);display:none;align-items:center;justify-content:center;padding:16px;z-index:50;overflow:auto}.modal-backdrop.show{display:flex}.modal{width:min(760px,100%);max-height:min(88vh,940px);background:#fff;border-radius:28px;overflow:hidden;box-shadow:0 30px 70px rgba(2,6,23,.35);display:flex;flex-direction:column}.modal.quiz-modal{width:min(880px,100%);max-height:min(90vh,980px)}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border);background:#f8fbff}.modal-head h3{margin:0;font-size:24px}.modal-body{padding:20px 24px;overflow:auto}.form-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:18px 16px}.modal .field{margin-bottom:0;padding-top:2px}.modal .field label{display:block;margin-bottom:8px;font-weight:600;line-height:1.35}.modal .input,.modal .select,.modal .textarea{width:100%}.modal .message{margin:0 0 16px 0}.modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:16px 22px;border-top:1px solid var(--border);background:#fcfdff}.span-2{grid-column:span 2}.span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-5{grid-column:span 5}.span-6{grid-column:span 6}.span-10{grid-column:span 10}.quiz-launch{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}.quiz-summary-box{border:1px dashed #93c5fd;background:#f8fbff;border-radius:16px;padding:14px 16px}.quiz-summary-box strong{display:block;color:#1d4ed8;margin-bottom:6px}.quiz-summary-box span{display:block;color:#334155;line-height:1.6}.quiz-result-chip{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-weight:700;font-size:13px}.quiz-result-chip.is-hidden{display:none}.quiz-modal-head-copy{display:flex;flex-direction:column;gap:4px}.quiz-modal-sub{color:var(--muted);font-size:14px;line-height:1.5}.quiz-modal-score{margin-left:auto}.quiz-actions-note{color:var(--muted);font-size:13px;line-height:1.5}.short-textarea{min-height:52px;height:52px;resize:none}.single-line-textarea{min-height:54px;height:54px;resize:none;overflow-y:auto;padding-top:15px;padding-bottom:15px}.multi-dropdown{min-height:190px;padding:10px 12px}.field-note.tight{margin-top:6px}.equal-height{min-height:54px}.dialog-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.58);display:none;align-items:center;justify-content:center;padding:18px;z-index:80}.dialog-backdrop.show{display:flex}.dialog-card{width:min(460px,100%);background:#fff;border-radius:24px;box-shadow:0 28px 70px rgba(2,6,23,.28);overflow:hidden;border:1px solid #e2e8f0}.dialog-head{display:flex;gap:14px;align-items:flex-start;padding:22px 22px 8px}.dialog-icon{width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;flex:0 0 auto}.dialog-icon.warning{background:#fff7ed;color:#c2410c}.dialog-icon.danger{background:#fef2f2;color:#dc2626}.dialog-icon.info{background:#eff6ff;color:#2563eb}.dialog-icon.success{background:#ecfdf5;color:#16a34a}.dialog-copy{min-width:0}.dialog-title{margin:2px 0 6px;font-size:22px;font-weight:800;color:#0f172a}.dialog-desc{margin:0;color:#475569;line-height:1.7;white-space:pre-line}.dialog-foot{display:flex;justify-content:flex-end;gap:10px;padding:16px 22px 22px}.dialog-foot .ghost-btn,.dialog-foot .primary-btn,.dialog-foot .danger-btn{min-width:110px}.dialog-foot .danger-btn{background:#dc2626;color:#fff;border-color:#dc2626}.dialog-icon.loading{background:#eff6ff;color:#2563eb;position:relative;font-size:0}.dialog-icon.loading::before{content:'';width:22px;height:22px;border-radius:999px;border:3px solid #bfdbfe;border-top-color:#2563eb;display:block;animation:dialogSpin .8s linear infinite}@keyframes dialogSpin{to{transform:rotate(360deg)}}
+
+    .section-nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}.section-nav .ghost-btn{background:#fff}.employee-status{display:inline-flex;align-items:center;justify-content:center;padding:7px 12px;border-radius:999px;font-size:13px;font-weight:700}.employee-status.active{background:#ecfdf5;color:#047857}.employee-status.pause{background:#eff6ff;color:#1d4ed8}.employee-status.inactive{background:#fef2f2;color:#b91c1c}.summary-card{display:none;margin-top:18px;border:1px dashed #bfdbfe;background:#f8fbff;border-radius:18px;padding:18px}.summary-card.show{display:block}.summary-card h4{margin:0 0 14px;font-size:18px}.summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.summary-item{border:1px solid var(--border);background:#fff;border-radius:14px;padding:12px 14px}.summary-item strong{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}.summary-item span{display:block;font-weight:700;color:#0f172a;line-height:1.6}.summary-actions-note{margin-top:12px;color:var(--muted);font-size:13px;line-height:1.6}.hidden{display:none!important}
+    @media (max-width:1080px){.card{grid-template-columns:1fr}.hero{border-right:none;border-bottom:1px solid var(--border)}.features{grid-template-columns:1fr}.topbar{flex-direction:column;align-items:stretch}.header-side{min-width:0;align-items:flex-start}.nav-actions{justify-content:flex-start}}
+    .training-grid{grid-template-columns:repeat(12,minmax(0,1fr))}
+    .t-span-12{grid-column:span 12}.t-span-6{grid-column:span 6}.t-span-4{grid-column:span 4}
+    .multi-select-wrap{position:relative}
+    .multi-select-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;cursor:pointer;background:#fff}
+    .multi-select-toggle::after{content:'▾';font-size:14px;color:#475569;flex:0 0 auto}
+    .multi-select-toggle.is-open::after{content:'▴'}
+    .multi-select-toggle:disabled{background:#f8fafc;color:#94a3b8;cursor:not-allowed}
+    .multi-select-menu{position:absolute;left:0;right:0;top:calc(100% + 8px);background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:0 18px 40px rgba(15,23,42,.14);padding:10px;display:none;z-index:35;max-height:280px;overflow:auto}
+    .multi-select-menu.show{display:block}
+    .multi-select-option{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:12px;cursor:pointer;transition:.18s ease;color:#0f172a}
+    .multi-select-option:hover{background:#f8fafc}
+    .multi-select-option input{margin-top:3px;accent-color:#2563eb}
+    .multi-select-option span{line-height:1.5}
+    .multi-select-empty{padding:10px 12px;color:#64748b;line-height:1.5}
+    .multi-select-hidden{display:none !important}
+    @media (max-width:760px){.wrap{padding:14px}.hero,.panel,.main,.topbar{padding:22px}.section-title{font-size:24px}.hero p{font-size:16px}.stat-grid,.form-grid,.training-grid{grid-template-columns:1fr}.toolbar{align-items:stretch}.search{max-width:none}.modal-head h3{font-size:22px}.brand h1{font-size:22px}.header-side{min-width:0}.span-2,.span-3,.span-4,.span-5,.span-6,.span-10,.t-span-12,.t-span-6,.t-span-4{grid-column:span 1}.cta-card{flex-direction:column;align-items:stretch}}
+  </style>
+</head>
+<body>
+  <section id="loginView" class="wrap">
+    <div class="card">
+      <section class="hero">
+        <div>
+          <div class="eyebrow">📘 Training Phase 3</div>
+          <h1>ระบบบันทึกการสอนงานหน้าสาขา</h1>
+          <p>ไฟล์ทดสอบเฟสถัดไปสำหรับ “บันทึกการสอนงาน” และ “ประเมินผลย้อนหลัง” ใช้สิทธิ์สาขาเดิม และดึงข้อมูลพนักงานจาก EMPLOYEE_MASTER</p>
+          <div class="features">
+            <div class="feature"><strong>🧑‍🏫 บันทึกการสอนงาน</strong><span>เลือกพนักงาน แล้วระบบจะดึง Module ตามตำแหน่งให้อัตโนมัติ</span></div>
+            <div class="feature"><strong>📝 ประเมินผลย้อนหลัง</strong><span>ประเมินจากรายการสอนงานที่ยังไม่เคยถูกประเมิน</span></div>
+            <div class="feature"><strong>🔗 ใช้ Google Sheets เดิม</strong><span>อิงชีต MODULE_SUB, TRAINING_LOG, EVALUATION_LOG ตามโครงที่คุณส่งมา</span></div>
+            <div class="feature"><strong>🚀 ทดสอบแยกก่อนได้</strong><span>ใช้เป็นไฟล์เฟส 3 แยกก่อน แล้วค่อยรวมกับหน้าเดิมในรอบถัดไป</span></div>
+          </div>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="branch">เข้าสู่ระบบสาขา</button>
+          <button class="tab-btn" data-tab="admin">เข้าสู่ระบบ Admin</button>
+        </div>
+        <div class="form active" id="branchForm">
+          <h2 class="section-title">ล็อกอินสาขา</h2>
+          <p class="section-sub">กรอกรหัสสาขา 4 หลัก เพื่อเข้าสู่ระบบของสาขาคุณ</p>
+          <div class="field">
+            <label class="label" for="branchCode"><span>รหัสสาขา</span><span class="hint">4 หลัก</span></label>
+            <input id="branchCode" class="input" type="password" inputmode="numeric" maxlength="4" placeholder="เช่น 1001" />
+          </div>
+          <button id="branchBtn" class="btn">เข้าสู่ระบบสาขา</button>
+          <div id="branchMsg" class="message"></div>
+        </div>
+        <div class="form" id="adminForm">
+          <h2 class="section-title">ล็อกอิน Admin</h2>
+          <p class="section-sub">กรอกรหัสผู้ดูแล 6 หลัก</p>
+          <div class="field">
+            <label class="label" for="adminCode"><span>รหัส Admin</span><span class="hint">6 หลัก</span></label>
+            <input id="adminCode" class="input" type="password" inputmode="numeric" maxlength="6" placeholder="เช่น 123456" />
+          </div>
+          <button id="adminBtn" class="btn">เข้าสู่ระบบ Admin</button>
+          <div id="adminMsg" class="message"></div>
+        </div>
+        <div id="resultBox" class="result-box">
+          <strong>ข้อมูล session ที่บันทึกไว้ใน browser:</strong>
+          <code id="resultCode"></code>
+        </div>
+        <div class="footer-note">เวอร์ชันเฟส 3 หน้าเดียว: Training + Evaluation</div>
+      </section>
+    </div>
+  </section>
+
+  <section id="appView" class="hidden">
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-copy">
+            <h1>ระบบบันทึกการสอนงานหน้าสาขา <span id="branchNameInline" style="color:var(--primary)"></span></h1>
+            <div class="header-meta-row">
+              <div class="top-meta-item"><strong>สิทธิ์การใช้งาน</strong><span id="roleText">-</span></div>
+              <div class="top-meta-item"><strong>ผู้จัดการเขต</strong><span id="managerText">-</span></div>
+            </div>
+            <div class="header-subtitle">หน้าเดียว: บันทึกการสอนงาน + ประเมินผลต่อเนื่องทันที</div>
+          </div>
+        </div>
+        <div class="header-side">
+          <div class="nav-actions">
+            <button class="ghost-btn" id="navEmployeeBtn">พนักงาน</button>
+            <button class="ghost-btn" id="navTrainingBtn">บันทึกการสอน</button>
+            <button class="ghost-btn" id="navEvaluationBtn">ผลประเมิน</button>
+            <button class="ghost-btn logout-btn" id="logoutBtn">ออกจากระบบ</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="grid">
+        <main class="main">
+
+          <section id="employeeSection" class="section-view active">
+            <h2 class="section-block-title" style="margin-top:0">ทะเบียนรายชื่อพนักงานสาขา</h2>
+            <p class="section-block-sub">เพิ่ม / แก้ไข / ลบ รายชื่อพนักงานของสาขา และใช้ต่อในการบันทึกการสอนงาน</p>
+            <div id="employeeMsg" class="message info show">กำลังโหลดข้อมูลพนักงาน...</div>
+            <div class="stat-grid">
+              <div class="stat"><div class="label">พนักงานทั้งหมด</div><div class="value" id="totalEmployees">0</div></div>
+              <div class="stat"><div class="label">สถานะทำงาน</div><div class="value" id="activeEmployees">0</div></div>
+              <div class="stat"><div class="label">แสดงผลในตาราง</div><div class="value" id="visibleEmployees">0</div></div>
+            </div>
+            <div class="toolbar">
+              <div class="search-wrap">
+                <input id="employeeSearchInput" class="input search" type="text" placeholder="ค้นหาชื่อ / ชื่อเล่น / ตำแหน่ง / รหัสพนักงาน" />
+                <select id="employeeStatusFilter" class="select" style="max-width:180px">
+                  <option value="">ทุกสถานะ</option>
+                  <option value="ทำงาน">ทำงาน</option>
+                  <option value="ลาออก">ลาออก</option>
+                  <option value="ย้ายสาขา">ย้ายสาขา</option>
+                </select>
+              </div>
+              <div class="nav-actions">
+                <button class="ghost-btn" id="reloadEmployeeBtn">รีเฟรชข้อมูล</button>
+                <button class="primary-btn" id="addEmployeeBtn">+ เพิ่มพนักงาน</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:120px">รหัส</th>
+                    <th>ชื่อพนักงาน</th>
+                    <th>ชื่อเล่น</th>
+                    <th>ตำแหน่ง</th>
+                    <th style="width:130px">วันที่เริ่มงาน</th>
+                    <th style="width:120px">สถานะ</th>
+                    <th>ผู้ลงข้อมูล</th>
+                    <th style="width:170px">วันที่บันทึก</th>
+                    <th>หมายเหตุ</th>
+                    <th class="action-col" style="width:190px">จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody id="employeeTableBody">
+                  <tr><td colspan="10" class="empty">ยังไม่มีข้อมูลพนักงาน</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="section-spacer"></div>
+          </section>
+
+          <section id="trainingSection" class="section-view active">
+            <h2 class="section-block-title" style="margin-top:0">บันทึกการสอนงาน</h2>
+            <p class="section-block-sub">ลงบันทึกการสอนงาน และประเมินผลต่อได้ทันทีจากหน้านี้</p>
+            <div id="trainingMsg" class="message info show">กำลังโหลดข้อมูลการสอนงาน...</div>
+            <div class="stat-grid">
+              <div class="stat"><div class="label">รายการสอนทั้งหมด</div><div class="value" id="totalTrainingLogs">0</div></div>
+              <div class="stat"><div class="label">รอประเมิน</div><div class="value" id="pendingTrainingLogs">0</div></div>
+              <div class="stat"><div class="label">แสดงผลในตาราง</div><div class="value" id="visibleTrainingLogs">0</div></div>
+            </div>
+            <div class="toolbar">
+              <div class="search-wrap">
+                <input id="trainingSearchInput" class="input search" type="text" placeholder="ค้นหาพนักงาน / Module / หัวข้อย่อย / ผู้สอน" />
+              </div>
+              <div class="nav-actions">
+                <button class="ghost-btn" id="reloadTrainingBtn">รีเฟรชข้อมูล</button>
+                <button class="primary-btn" id="addTrainingBtn">+ บันทึกการสอนงาน</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:180px">วันที่-เวลา</th>
+                    <th>พนักงาน</th>
+                    <th>ตำแหน่ง</th>
+                    <th>Module หลัก</th>
+                    <th>หัวข้อย่อย</th>
+                    <th>ผู้สอน</th>
+                    <th>ผู้บันทึก</th>
+                    <th>สถานะประเมิน</th>
+                    <th>หมายเหตุ</th>
+                    <th class="action-col" style="width:300px;text-align:center">แก้ไข / ประเมินผล / ลบ</th>
+                  </tr>
+                </thead>
+                <tbody id="trainingTableBody">
+                  <tr><td colspan="10" class="empty">ยังไม่มีข้อมูล</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <div id="postTrainingAction" class="cta-card hidden">
+            <div class="cta-copy">
+              <strong>บันทึกการสอนงานสำเร็จ</strong>
+              <span id="postTrainingActionText">กดปุ่มด้านขวาเพื่อประเมินผลรายการล่าสุดต่อได้ทันที</span>
+            </div>
+            <div class="nav-actions">
+              <button class="primary-btn" id="evaluateLatestTrainingBtn">ประเมินผลรายการนี้ต่อ</button>
+            </div>
+          </div>
+
+          <section id="evaluationSection" class="section-view active">
+            <div class="section-spacer"></div>
+            <h2 class="section-block-title">ผลการประเมินย้อนหลัง</h2>
+            <p class="section-block-sub">สรุปผลการประเมินของรายการสอนงานทั้งหมดในหน้าเดียวกัน</p>
+            <div id="evaluationMsg" class="message info show">กำลังโหลดข้อมูลประเมินผล...</div>
+            <div class="stat-grid">
+              <div class="stat"><div class="label">ประเมินแล้วทั้งหมด</div><div class="value" id="totalEvaluations">0</div></div>
+              <div class="stat"><div class="label">ผลผ่าน</div><div class="value" id="passedEvaluations">0</div></div>
+              <div class="stat"><div class="label">แสดงผลในตาราง</div><div class="value" id="visibleEvaluations">0</div></div>
+            </div>
+            <div class="toolbar">
+              <div class="search-wrap">
+                <input id="evaluationSearchInput" class="input search" type="text" placeholder="ค้นหาพนักงาน / ผลประเมิน / ผู้ประเมิน" />
+              </div>
+              <div class="nav-actions">
+                <button class="ghost-btn" id="reloadEvaluationBtn">รีเฟรชข้อมูล</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:180px">วันที่-เวลา</th>
+                    <th>พนักงาน</th>
+                    <th>ตำแหน่ง</th>
+                    <th>Module หลัก</th>
+                    <th>หัวข้อย่อย</th>
+                    <th style="width:140px">ผลประเมิน</th>
+                    <th style="width:100px">คะแนน</th>
+                    <th>ผู้ประเมิน</th>
+                    <th class="action-col" style="width:230px">ดำเนินการ</th>
+                  </tr>
+                </thead>
+                <tbody id="evaluationTableBody">
+                  <tr><td colspan="9" class="empty">ยังไม่มีข้อมูล</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </section>
+
+
+  <div class="modal-backdrop" id="employeeModal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="employeeModalTitle">เพิ่มพนักงาน</h3>
+        <button class="icon-btn" id="closeEmployeeModalBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="employeeModalMsg" class="message"></div>
+        <form id="employeeForm">
+          <input type="hidden" id="employeeMode" value="add">
+          <input type="hidden" id="editingEmployeeId">
+          <div class="form-grid" id="employeeFormFields">
+            <div class="field span-3">
+              <label for="employeeCode">รหัสพนักงาน <span class="req">*</span></label>
+              <input id="employeeCode" class="input" type="text">
+            </div>
+            <div class="field span-5">
+              <label for="employeeName">ชื่อ-นามสกุล <span class="req">*</span></label>
+              <input id="employeeName" class="input" type="text">
+            </div>
+            <div class="field span-2">
+              <label for="nickname">ชื่อเล่น <span class="req">*</span></label>
+              <input id="nickname" class="input" type="text">
+            </div>
+            <div class="field span-3">
+              <label for="startDate">วันเริ่มงาน <span class="req">*</span></label>
+              <input id="startDate" class="input" type="date">
+            </div>
+            <div class="field span-5">
+              <label for="position">ตำแหน่ง <span class="req">*</span></label>
+              <select id="position" class="select"><option value="">เลือกตำแหน่ง</option></select>
+            </div>
+            <div class="field span-2">
+              <label for="status">สถานะ <span class="req">*</span></label>
+              <select id="status" class="select">
+                <option value="ทำงาน">ทำงาน</option>
+                <option value="ลาออก">ลาออก</option>
+                <option value="ย้ายสาขา">ย้ายสาขา</option>
+              </select>
+            </div>
+            <div class="field span-5">
+              <label for="submitterName">ผู้ลงข้อมูล <span class="req">*</span></label>
+              <input id="submitterName" class="input equal-height" type="text">
+            </div>
+            <div class="field span-5">
+              <label for="remark">หมายเหตุ</label>
+              <textarea id="remark" class="textarea single-line-textarea equal-height"></textarea>
+            </div>
+          </div>
+          <div id="employeeSummaryCard" class="summary-card">
+            <h4>สรุปข้อมูลก่อนบันทึก</h4>
+            <div id="employeeSummaryGrid" class="summary-grid"></div>
+            <div class="summary-actions-note">ตรวจสอบข้อมูลให้ถูกต้องก่อนบันทึก คุณสามารถกด “แก้ไขข้อมูล” เพื่อกลับไปแก้ได้</div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="ghost-btn danger-btn" id="cancelEmployeeBtn">ยกเลิก</button>
+        <button type="button" class="ghost-btn warning-btn hidden" id="editEmployeeSummaryBtn">แก้ไขข้อมูล</button>
+        <button type="button" class="ghost-btn warning-btn" id="reviewEmployeeBtn">ตรวจสอบข้อมูล</button>
+        <button type="button" class="primary-btn hidden" id="saveEmployeeBtn">บันทึกข้อมูล</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="trainingModal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="trainingModalTitle">บันทึกการสอนงาน</h3>
+        <button class="icon-btn" id="closeTrainingModalBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="trainingModalMsg" class="message"></div>
+        <div class="form-grid training-grid">
+          <div class="field t-span-12">
+            <label for="trainingEmployeeSelect">พนักงาน <span class="req">*</span></label>
+            <select id="trainingEmployeeSelect" class="select">
+              <option value="">เลือกพนักงาน</option>
+            </select>
+          </div>
+          <div class="field t-span-6">
+            <label>ตำแหน่ง</label>
+            <div id="trainingPositionName" class="readonly-box">-</div>
+          </div>
+          <div class="field t-span-6">
+            <label for="trainingModuleMain">Module หลัก <span class="req">*</span></label>
+            <select id="trainingModuleMain" class="select">
+              <option value="">เลือก Module หลัก</option>
+            </select>
+          </div>
+          <div class="field t-span-12">
+            <label for="trainingModuleSubToggle">หัวข้อย่อย <span class="req">*</span></label>
+            <div class="multi-select-wrap" id="trainingModuleSubWrap">
+              <button type="button" id="trainingModuleSubToggle" class="select multi-select-toggle" disabled>เลือก Module หลักก่อน</button>
+              <div id="trainingModuleSubMenu" class="multi-select-menu">
+                <div class="multi-select-empty">เลือก Module หลักก่อน</div>
+              </div>
+              <select id="trainingModuleSubSelect" class="multi-select-hidden" multiple>
+                <option value="">เลือก Module หลักก่อน</option>
+              </select>
+            </div>
+            <div id="trainingModuleSubSummary" class="field-note tight muted">เลือก Module หลักก่อน</div>
+          </div>
+          <div class="field t-span-4">
+            <label>วันที่-เวลาบันทึก <span class="req">*</span></label>
+            <div id="trainingDateTimeDisplay" class="readonly-box">-</div>
+            <input id="trainingDate" class="hidden-input" type="hidden">
+          </div>
+          <div class="field t-span-4">
+            <label for="trainerName">ผู้สอน <span class="req">*</span></label>
+            <input id="trainerName" class="input" type="text" placeholder="ชื่อผู้สอน">
+          </div>
+          <div class="field t-span-4">
+            <label for="trainingRecorderName">ผู้บันทึก <span class="req">*</span></label>
+            <input id="trainingRecorderName" class="input" type="text" placeholder="ชื่อผู้บันทึก">
+          </div>
+          <div class="field t-span-12">
+            <label for="trainingNote">หมายเหตุ</label>
+            <textarea id="trainingNote" class="textarea short-textarea equal-height" placeholder="ข้อมูลเพิ่มเติม"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="ghost-btn danger-btn" id="cancelTrainingBtn">ยกเลิก</button>
+        <button type="button" class="primary-btn" id="saveTrainingBtn">บันทึกการสอนงาน</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="evaluationModal">
+    <div class="modal compact-modal">
+      <div class="modal-head">
+        <h3 id="evaluationModalTitle">บันทึกผลประเมิน</h3>
+        <button class="icon-btn" id="closeEvaluationModalBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="evaluationModalMsg" class="message"></div>
+        <div class="form-grid">
+          <div class="field span-10">
+            <label for="evaluationTrainingSelect">เลือกรายการสอนงาน <span class="req">*</span></label>
+            <select id="evaluationTrainingSelect" class="select">
+              <option value="">เลือกรายการสอนงาน</option>
+            </select>
+          </div>
+          <div class="field span-10">
+            <div class="soft-card">
+              <strong>ข้อมูลรายการที่เลือก</strong>
+              <span id="evaluationTrainingSummary">-</span>
+            </div>
+          </div>
+          <div class="field span-4">
+            <label>วันที่-เวลาประเมิน <span class="req">*</span></label>
+            <div id="evaluationDateTimeDisplay" class="readonly-box">-</div>
+            <input id="evaluationDate" class="hidden-input" type="hidden">
+          </div>
+          <div class="field span-3">
+            <label for="evaluationResult">ผลการประเมิน <span class="req">*</span></label>
+            <select id="evaluationResult" class="select">
+              <option value="">เลือกผลการประเมิน</option>
+              <option value="ผ่าน">ผ่าน</option>
+              <option value="ไม่ผ่าน">ไม่ผ่าน</option>
+              <option value="ต้องติดตาม">ต้องติดตาม</option>
+            </select>
+            <div class="field-note">เมื่อมีข้อสอบ ระบบจะสรุปคะแนนให้อัตโนมัติหลังจากกดสรุปข้อสอบ</div>
+          </div>
+          <div class="field span-3">
+            <label for="evaluationScore">คะแนน</label>
+            <input id="evaluationScore" class="input score-readonly" type="number" min="0" max="100" placeholder="0-100">
+            <input id="evaluationQuizTotal" class="hidden-input" type="hidden">
+            <input id="evaluationQuizCorrect" class="hidden-input" type="hidden">
+          </div>
+          <div class="field span-10">
+            <div class="soft-card quiz-launch">
+              <div>
+                <strong>ข้อสอบ 4 ตัวเลือก</strong>
+                <span id="evaluationQuizHint">เลือกรายการสอนงานก่อน ระบบจะดึงข้อสอบตาม Module หลัก ให้อัตโนมัติ</span>
+              </div>
+              <button type="button" class="primary-btn small-btn" id="openQuizModalBtn">ทำข้อสอบ</button>
+            </div>
+          </div>
+          <div class="field span-10">
+            <div id="quizSummaryBox" class="quiz-summary-box">
+              <strong>สรุปข้อสอบ</strong>
+              <span id="quizSummaryText">ยังไม่ได้ทำข้อสอบ</span>
+            </div>
+          </div>
+          <div class="field span-5">
+            <label for="evaluatorName">ผู้ประเมิน <span class="req">*</span></label>
+            <input id="evaluatorName" class="input" type="text" placeholder="ชื่อผู้ประเมิน">
+          </div>
+          <div class="field span-5">
+            <label for="evaluationNote">หมายเหตุ</label>
+            <textarea id="evaluationNote" class="textarea" placeholder="เช่น ต้องฝึกซ้ำ / ผ่านตามเกณฑ์"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="ghost-btn danger-btn" id="cancelEvaluationBtn">ยกเลิก</button>
+        <button type="button" class="primary-btn" id="saveEvaluationBtn">บันทึกผลประเมิน</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="quizModal">
+    <div class="modal quiz-modal">
+      <div class="modal-head">
+        <div class="quiz-modal-head-copy">
+          <h3>ทำข้อสอบ 4 ตัวเลือก</h3>
+          <div id="quizModalSub" class="quiz-modal-sub">-</div>
+        </div>
+        <button class="icon-btn" id="closeQuizModalBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="quizModalMsg" class="message"></div>
+        <div class="quiz-launch" style="margin-bottom:14px">
+          <div class="quiz-result-chip is-hidden" id="quizModalScoreChip"></div>
+          <div class="quiz-actions-note">เลือกคำตอบให้ครบ แล้วกดปุ่ม “สรุปคะแนนข้อสอบ” ด้านล่าง</div>
+        </div>
+        <div id="quizModalQuestions" class="quiz-box">
+          <div class="quiz-empty">ยังไม่มีข้อสอบสำหรับรายการนี้</div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="ghost-btn" id="cancelQuizBtn">ปิด</button>
+        <button type="button" class="primary-btn" id="applyQuizBtn">สรุปคะแนนข้อสอบ</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialog-backdrop" id="appDialog">
+    <div class="dialog-card">
+      <div class="dialog-head">
+        <div id="appDialogIcon" class="dialog-icon info">!</div>
+        <div class="dialog-copy">
+          <div id="appDialogTitle" class="dialog-title">แจ้งเตือน</div>
+          <p id="appDialogDesc" class="dialog-desc">-</p>
+        </div>
+      </div>
+      <div class="dialog-foot">
+        <button type="button" class="ghost-btn" id="appDialogCancelBtn">ยกเลิก</button>
+        <button type="button" class="primary-btn" id="appDialogConfirmBtn">ตกลง</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbzNKzSb9VFCMmm_IBguvRSaG-oqCfTO0vhQqk3ikQei8GEXwM07U4mbiPvup0UXbX0x/exec';
+    const STORAGE_KEY = 'training_auth';
+
+    let auth = null;
+    let positions = [];
+    let employees = [];
+    let filteredEmployees = [];
+    let trainingLogs = [];
+    let filteredTrainingLogs = [];
+    let evaluationLogs = [];
+    let filteredEvaluationLogs = [];
+    let moduleMainCache = {};
+    let moduleSubCache = {};
+    let quizRows = [];
+        let quizCacheByMain = {};
+    let currentEvaluationQuiz = [];
+    let currentQuizPassScore = 80;
+    let trainingFormReady = false;
+    let latestTrainingForEvaluation = '';
+    let trainingModalMode = 'create';
+    let editingTrainingLogId = '';
+    let evaluationModalMode = 'create';
+    let editingEvaluationId = '';
+    let evaluationPrefillAnswers = [];
+    let currentQuizScoreVisible = false;
+    let currentQuizAppliedAnswers = [];
+    let currentQuizDraftAnswers = [];
+
+    const APP_TIMEZONE = 'Asia/Bangkok';
+    function $(id){ return document.getElementById(id); }
+    function onlyDigits(value, maxLength) { return String(value || '').replace(/\D/g, '').slice(0, maxLength); }
+    function showMessage(id, type, text) { const el = $(id); if (!el) return; el.className = `message show ${type}`; el.textContent = text; }
+    function hideMessage(id) { const el = $(id); if (!el) return; el.className = 'message'; el.textContent = ''; }
+    let appDialogResolver = null;
+    function nl2brEscape(text) { return escapeHtml(String(text || '')).replace(/\n/g, '<br>'); }
+    function closeAppDialog(result) {
+      const dialog = $('appDialog');
+      if (dialog) dialog.classList.remove('show');
+      if (appDialogResolver) {
+        const resolve = appDialogResolver;
+        appDialogResolver = null;
+        resolve(!!result);
+      }
+    }
+    function openAppDialog(opts = {}) {
+      return new Promise(resolve => {
+        appDialogResolver = resolve;
+        const type = opts.type || 'info';
+        const iconMap = { warning: '!', danger: '🗑️', info: 'i', success: '✓' };
+        $('appDialogTitle').textContent = opts.title || 'แจ้งเตือน';
+        $('appDialogDesc').innerHTML = nl2brEscape(opts.text || '');
+        const icon = $('appDialogIcon');
+        icon.className = `dialog-icon ${type}`;
+        icon.textContent = iconMap[type] || 'i';
+        const cancelBtn = $('appDialogCancelBtn');
+        const confirmBtn = $('appDialogConfirmBtn');
+        const foot = document.querySelector('#appDialog .dialog-foot');
+        if (foot) foot.style.display = '';
+        cancelBtn.style.display = opts.showCancel ? '' : 'none';
+        cancelBtn.textContent = opts.cancelText || 'ยกเลิก';
+        confirmBtn.style.display = '';
+        confirmBtn.textContent = opts.confirmText || 'ตกลง';
+        const confirmClasses = (opts.confirmClass ? String(opts.confirmClass).split(/\s+/).filter(Boolean) : (type === 'danger' ? ['ghost-btn', 'danger-btn'] : ['primary-btn']));
+        if (confirmClasses.includes('danger-btn') && !confirmClasses.includes('ghost-btn') && !confirmClasses.includes('primary-btn')) confirmClasses.unshift('ghost-btn');
+        confirmBtn.className = confirmClasses.join(' ');
+        $('appDialog').classList.add('show');
+      });
+    }
+    function showPrettyAlert(title, text, type = 'warning') {
+      return openAppDialog({ title, text, type, showCancel: false, confirmText: 'รับทราบ' });
+    }
+    function showPrettyConfirm(title, text, type = 'warning', confirmText = 'ยืนยัน', cancelText = 'ยกเลิก') {
+      return openAppDialog({ title, text, type, showCancel: true, confirmText, cancelText, confirmClass: type === 'danger' ? 'danger-btn' : 'primary-btn' });
+    }
+    function showBlockingDialog(title, text) {
+      appDialogResolver = null;
+      $('appDialogTitle').textContent = title || 'กำลังดำเนินการ';
+      $('appDialogDesc').innerHTML = nl2brEscape(text || '');
+      const icon = $('appDialogIcon');
+      icon.className = 'dialog-icon loading';
+      icon.textContent = '';
+      $('appDialogCancelBtn').style.display = 'none';
+      $('appDialogConfirmBtn').style.display = 'none';
+      const foot = document.querySelector('#appDialog .dialog-foot');
+      if (foot) foot.style.display = 'none';
+      $('appDialog').classList.add('show');
+    }
+    function hideBlockingDialog() {
+      const foot = document.querySelector('#appDialog .dialog-foot');
+      if (foot) foot.style.display = '';
+      $('appDialog').classList.remove('show');
+    }
+    function setLoading(buttonId, loadingText, isLoading) { const btn = $(buttonId); if (!btn) return; btn.disabled = isLoading; btn.textContent = isLoading ? loadingText : btn.dataset.defaultText; }
+    function escapeHtml(text) { return String(text ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch])); }
+    function getBangkokParts(value = new Date()) {
+      const date = value instanceof Date ? value : new Date(value);
+      if (Number.isNaN(date.getTime())) return null;
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: APP_TIMEZONE,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      }).formatToParts(date);
+      const map = {};
+      parts.forEach(part => { if (part.type !== 'literal') map[part.type] = part.value; });
+      return map;
+    }
+    function getTodayISO() {
+      const parts = getBangkokParts(new Date());
+      return parts ? `${parts.year}-${parts.month}-${parts.day}` : '';
+    }
+    function getNowMeta() {
+      const parts = getBangkokParts(new Date());
+      return {
+        date: parts ? `${parts.year}-${parts.month}-${parts.day}` : '',
+        time: parts ? `${parts.hour}:${parts.minute}:${parts.second}` : '',
+        display: parts ? `${parts.day}/${parts.month}/${String(Number(parts.year) + 543)} ${parts.hour}:${parts.minute} น.` : '-'
+      };
+    }
+    function formatDate(value) {
+      if (!value) return '-';
+      if (/^\d{4}-\d{2}-\d{2}$/.test(String(value))) {
+        const [y,m,d] = String(value).split('-');
+        return `${d}/${m}/${String(Number(y) + 543)}`;
+      }
+      const parts = getBangkokParts(value);
+      return parts ? `${parts.day}/${parts.month}/${String(Number(parts.year) + 543)}` : String(value).slice(0, 10);
+    }
+    function formatDateTime(value, fallbackDate = '') {
+      const parts = value ? getBangkokParts(value) : null;
+      if (parts) return `${parts.day}/${parts.month}/${String(Number(parts.year) + 543)} ${parts.hour}:${parts.minute} น.`;
+      return fallbackDate ? `${formatDate(fallbackDate)} -` : '-';
+    }
+    function setLockedCurrentDateTime(prefix) {
+      const meta = getNowMeta();
+      if ($(prefix + 'Date')) $(prefix + 'Date').value = meta.date;
+      if ($(prefix + 'DateTimeDisplay')) $(prefix + 'DateTimeDisplay').textContent = meta.display;
+      return meta;
+    }
+
+    function saveSession(data) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...data, login_at: new Date().toISOString() }));
+      $('resultCode').textContent = localStorage.getItem(STORAGE_KEY);
+      $('resultBox').classList.add('show');
+      auth = parseSession();
+    }
+    function clearSession() { localStorage.removeItem(STORAGE_KEY); auth = null; }
+    function parseSession() { try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
+
+    function setActiveTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
+      $('branchForm').classList.toggle('active', tabName === 'branch');
+      $('adminForm').classList.toggle('active', tabName === 'admin');
+      hideMessage('branchMsg');
+      hideMessage('adminMsg');
+    }
+
+    function showLoginView() {
+      $('appView').classList.add('hidden');
+      $('loginView').classList.remove('hidden');
+    }
+    function showAppView() {
+      $('loginView').classList.add('hidden');
+      $('appView').classList.remove('hidden');
+      $('trainingSection').classList.add('active');
+      $('evaluationSection').classList.add('active');
+    }
+    function switchSection() {}
+
+    function jsonpRequest(params) {
+      return new Promise((resolve, reject) => {
+        if (!API_BASE_URL || API_BASE_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL') {
+          reject(new Error('กรุณาใส่ Apps Script Web App URL ในตัวแปร API_BASE_URL ก่อน'));
+          return;
+        }
+        const callbackName = 'jsonp_cb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+        const script = document.createElement('script');
+        const query = new URLSearchParams({ ...params, _ts: Date.now() + '_' + Math.floor(Math.random()*10000), callback: callbackName });
+        const cleanup = () => { delete window[callbackName]; if (script.parentNode) script.parentNode.removeChild(script); };
+        window[callbackName] = function(response) { cleanup(); resolve(response); };
+        script.onerror = function() { cleanup(); reject(new Error('เชื่อมต่อ API ไม่สำเร็จ')); };
+        script.src = `${API_BASE_URL}?${query.toString()}`;
+        document.body.appendChild(script);
+      });
+    }
+
+    async function handleBranchLogin() {
+      hideMessage('branchMsg');
+      const branchCode = onlyDigits($('branchCode').value, 4);
+      if (branchCode.length !== 4) return showMessage('branchMsg', 'error', 'กรุณากรอกรหัสสาขา 4 หลัก');
+      try {
+        setLoading('branchBtn', 'กำลังตรวจสอบ...', true);
+        const res = await jsonpRequest({ action: 'loginBranch', branchCode });
+        if (!res.ok) throw new Error(res.message || 'เข้าสู่ระบบไม่สำเร็จ');
+        saveSession(res);
+        showAppView();
+        await initialLoad();
+      } catch (err) {
+        showMessage('branchMsg', 'error', err.message || 'เกิดข้อผิดพลาด');
+      } finally {
+        setLoading('branchBtn', 'กำลังตรวจสอบ...', false);
+      }
+    }
+
+    async function handleAdminLogin() {
+      hideMessage('adminMsg');
+      const adminCode = onlyDigits($('adminCode').value, 6);
+      if (adminCode.length !== 6) return showMessage('adminMsg', 'error', 'กรุณากรอกรหัส Admin 6 หลัก');
+      try {
+        setLoading('adminBtn', 'กำลังตรวจสอบ...', true);
+        const res = await jsonpRequest({ action: 'loginAdmin', adminCode });
+        if (!res.ok) throw new Error(res.message || 'เข้าสู่ระบบไม่สำเร็จ');
+        saveSession(res);
+        showMessage('adminMsg', 'info', 'ไฟล์นี้เปิดใช้งานเฉพาะโหมดสาขาก่อนในเฟส 3');
+      } catch (err) {
+        showMessage('adminMsg', 'error', err.message || 'เกิดข้อผิดพลาด');
+      } finally {
+        setLoading('adminBtn', 'กำลังตรวจสอบ...', false);
+      }
+    }
+
+    function requireBranchSession() {
+      auth = parseSession();
+      if (!auth || !auth.ok || auth.role !== 'branch' || !auth.branch_code) return false;
+      $('branchNameInline').textContent = auth.branch_name || auth.branch_code || '';
+      $('roleText').textContent = 'Branch User';
+      $('managerText').textContent = auth.manager_name || auth.branch_name || '-';
+      return true;
+    }
+
+    function markTrainingBootstrapDirty() {
+      trainingFormReady = false;
+      moduleMainCache = {};
+      moduleSubCache = {};
+      quizRows = [];
+      quizCacheByMain = {};
+    }
+
+
+    function normalizeKey(value) {
+      return String(value || '').trim().toUpperCase();
+    }
+
+    function normalizeNameKey(value) {
+      return String(value || '').replace(/\s+/g, ' ').trim().toLowerCase();
+    }
+
+    function normalizeEmployee(row) {
+      return {
+        employee_id: row.employee_id || row.employeeId || row.id || '',
+        employee_code: row.employee_code || row.employeeCode || '',
+        employee_name: row.employee_name || row.full_name || row.employeeName || '',
+        nickname: row.nickname || row.nick_name || '',
+        position_id: row.position_id || '',
+        position_name: row.position_name || row.position || '',
+        position: row.position || row.position_name || '',
+        start_date: row.start_date || row.startDate || row.hire_date || '',
+        status: row.status || 'ทำงาน',
+        remark: row.remark || row.note || '',
+        updated_by: row.updated_by || row.created_by || row.updatedBy || row.createdBy || '',
+        updated_at: row.updated_at || row.created_at || row.updatedAt || row.createdAt || '',
+        branch_code: row.branch_code || (auth ? auth.branch_code : '')
+      };
+    }
+    function normalizeTraining(row) {
+      return {
+        log_id: row.log_id || '',
+        training_date: row.training_date || '',
+        training_time: row.training_time || '',
+        training_datetime: row.training_datetime || row.training_at || row.created_at || '',
+        branch_code: row.branch_code || '',
+        employee_id: row.employee_id || '',
+        employee_code: row.employee_code || '',
+        full_name: row.full_name || row.employee_name || '',
+        position_id: row.position_id || '',
+        position_name: row.position_name || '',
+        module_main_id: normalizeKey(row.module_main_id || ''),
+        module_main_name: row.module_main_name || '',
+        module_sub_id: row.module_sub_id || '',
+        module_sub_ids: row.module_sub_ids || row.module_sub_id || '',
+        module_sub_name: row.module_sub_name || '',
+        module_sub_names: row.module_sub_names || row.module_sub_name || '',
+        quiz_group_id: normalizeKey(row.quiz_group_id || row.module_main_id || ''),
+        trainer_name: row.trainer_name || '',
+        recorder_name: row.recorder_name || row.created_by || '',
+        note: row.note || row.remark || '',
+        created_at: row.created_at || row.training_datetime || '',
+        updated_at: row.updated_at || row.created_at || row.training_datetime || ''
+      };
+    }
+    function normalizeEvaluation(row) {
+      return {
+        eval_id: row.eval_id || '',
+        log_id: row.log_id || '',
+        evaluation_date: row.evaluation_date || '',
+        evaluation_time: row.evaluation_time || '',
+        evaluation_datetime: row.evaluation_datetime || row.evaluation_at || row.created_at || '',
+        branch_code: row.branch_code || '',
+        employee_id: row.employee_id || '',
+        full_name: row.full_name || row.employee_name || '',
+        position_name: row.position_name || '',
+        module_main_name: row.module_main_name || '',
+        module_sub_name: row.module_sub_name || '',
+        quiz_group_id: normalizeKey(row.quiz_group_id || row.module_main_id || ''),
+        result: row.result || '',
+        score: row.score || '',
+        quiz_total: row.quiz_total || '',
+        quiz_correct: row.quiz_correct || '',
+        quiz_answers: row.quiz_answers || '',
+        evaluator_name: row.evaluator_name || '',
+        note: row.note || row.remark || '',
+        created_at: row.created_at || row.evaluation_datetime || '',
+        updated_at: row.updated_at || row.created_at || row.evaluation_datetime || ''
+      };
+    }
+
+
+    function toTimeValue(value, fallbackDate = '') {
+      const raw = String(value || fallbackDate || '').trim();
+      if (!raw) return 0;
+      const parsed = Date.parse(raw);
+      if (!Number.isNaN(parsed)) return parsed;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return Date.parse(raw + 'T00:00:00');
+      return 0;
+    }
+    function sortEmployeesInPlace() {
+      employees.sort((a, b) => String(a.employee_code || a.employee_id || '').localeCompare(String(b.employee_code || b.employee_id || ''), 'th', { numeric: true }));
+    }
+    function sortTrainingLogsInPlace() {
+      trainingLogs.sort((a, b) => toTimeValue(b.training_datetime || b.created_at, b.training_date) - toTimeValue(a.training_datetime || a.created_at, a.training_date));
+    }
+    function sortEvaluationLogsInPlace() {
+      evaluationLogs.sort((a, b) => toTimeValue(b.evaluation_datetime || b.created_at, b.evaluation_date) - toTimeValue(a.evaluation_datetime || a.created_at, a.evaluation_date));
+    }
+    function upsertByKey(list, item, key) {
+      const idx = list.findIndex(entry => String(entry?.[key] || '') === String(item?.[key] || ''));
+      if (idx >= 0) list[idx] = { ...list[idx], ...item };
+      else list.unshift(item);
+    }
+    function removeByKey(list, key, value) {
+      const idx = list.findIndex(entry => String(entry?.[key] || '') === String(value || ''));
+      if (idx >= 0) list.splice(idx, 1);
+    }
+    function getSelectedText(selectId) {
+      const el = $(selectId);
+      return el && el.selectedOptions && el.selectedOptions[0] ? String(el.selectedOptions[0].textContent || '').trim() : '';
+    }
+    function getTrainingSelectedModuleSubItems() {
+      return Array.from(($('trainingModuleSubSelect')?.selectedOptions || [])).map(el => ({
+        token: String(el.value || '').trim(),
+        module_sub_id: String(el.dataset.id || '').trim(),
+        module_sub_name: String(el.dataset.name || el.textContent || '').trim()
+      })).filter(item => item.token || item.module_sub_id || item.module_sub_name);
+    }
+    function makeLocalIsoNow() {
+      return new Date().toISOString();
+    }
+    function buildLocalEmployeeRow(payload, res, mode = 'add') {
+      const nowIso = res?.updated_at || res?.created_at || makeLocalIsoNow();
+      return normalizeEmployee({
+        employee_id: res?.employee_id || (mode === 'edit' ? $('editingEmployeeId').value.trim() : ''),
+        employee_code: payload.employeeCode,
+        employee_name: payload.employeeName,
+        nickname: payload.nickname,
+        position_id: payload.positionId,
+        position_name: payload.position,
+        position: payload.position,
+        start_date: payload.startDate,
+        status: payload.status,
+        remark: payload.remark,
+        updated_by: payload.updatedBy,
+        updated_at: nowIso,
+        created_at: nowIso,
+        branch_code: auth?.branch_code || ''
+      });
+    }
+    function buildLocalTrainingRow(payload, res) {
+      const employee = getEmployeeById(payload.employeeId) || {};
+      const moduleSubs = getTrainingSelectedModuleSubItems();
+      const moduleSubNames = moduleSubs.map(item => item.module_sub_name).filter(Boolean).join(' / ');
+      const firstSub = moduleSubs[0] || {};
+      return normalizeTraining({
+        log_id: res?.log_id || res?.first_log_id || editingTrainingLogId,
+        training_date: res?.training_date || payload.trainingDate,
+        training_time: res?.training_time || '',
+        training_datetime: res?.training_datetime || res?.created_at || makeLocalIsoNow(),
+        created_at: res?.created_at || res?.training_datetime || makeLocalIsoNow(),
+        updated_at: res?.updated_at || res?.training_datetime || makeLocalIsoNow(),
+        branch_code: auth?.branch_code || '',
+        employee_id: employee.employee_id || payload.employeeId,
+        employee_code: employee.employee_code || '',
+        full_name: employee.employee_name || employee.full_name || '',
+        position_id: employee.position_id || '',
+        position_name: employee.position_name || employee.position || '',
+        module_main_id: payload.moduleMainId,
+        module_main_name: getSelectedText('trainingModuleMain') || '',
+        module_sub_id: firstSub.module_sub_id || '',
+        module_sub_ids: moduleSubs.map(item => item.token || item.module_sub_id).filter(Boolean).join(','),
+        module_sub_name: moduleSubNames || firstSub.module_sub_name || '',
+        module_sub_names: moduleSubNames || firstSub.module_sub_name || '',
+        trainer_name: payload.trainerName,
+        recorder_name: payload.recorderName,
+        note: payload.note,
+        quiz_group_id: payload.moduleMainId
+      });
+    }
+    function syncEvaluationFromTraining(logItem) {
+      if (!logItem) return;
+      evaluationLogs = evaluationLogs.map(item => item.log_id === logItem.log_id ? {
+        ...item,
+        employee_id: logItem.employee_id,
+        full_name: logItem.full_name,
+        position_name: logItem.position_name,
+        module_main_name: logItem.module_main_name,
+        module_sub_name: logItem.module_sub_name,
+        module_sub_names: logItem.module_sub_names,
+        quiz_group_id: logItem.quiz_group_id
+      } : item);
+    }
+    function buildLocalEvaluationRow(payload, res) {
+      const training = getTrainingLogById(payload.logId) || {};
+      return normalizeEvaluation({
+        eval_id: res?.eval_id || editingEvaluationId,
+        log_id: payload.logId,
+        evaluation_date: res?.evaluation_date || payload.evaluationDate,
+        evaluation_time: res?.evaluation_time || '',
+        evaluation_datetime: res?.evaluation_datetime || res?.created_at || makeLocalIsoNow(),
+        created_at: res?.created_at || res?.evaluation_datetime || makeLocalIsoNow(),
+        updated_at: res?.updated_at || res?.evaluation_datetime || makeLocalIsoNow(),
+        branch_code: auth?.branch_code || '',
+        employee_id: training.employee_id || '',
+        full_name: training.full_name || '',
+        position_name: training.position_name || '',
+        module_main_name: training.module_main_name || '',
+        module_sub_name: training.module_sub_name || training.module_sub_names || '',
+        module_sub_names: training.module_sub_names || training.module_sub_name || '',
+        quiz_group_id: training.quiz_group_id || training.module_main_id || '',
+        result: res?.result || payload.result,
+        score: res?.score || payload.score,
+        quiz_total: res?.quiz_total || payload.quizTotal || '',
+        quiz_correct: res?.quiz_correct || payload.quizCorrect || '',
+        quiz_answers: payload.quizAnswers || res?.quiz_answers || '',
+        evaluator_name: payload.evaluatorName,
+        note: payload.note || ''
+      });
+    }
+    function refreshEmployeeUI(selectedId = '') {
+      sortEmployeesInPlace();
+      applyEmployeeFilters();
+      populateTrainingEmployeeOptions(selectedId || $('trainingEmployeeSelect')?.value || '');
+    }
+    function refreshTrainingUI(selectedLogId = '') {
+      sortTrainingLogsInPlace();
+      applyTrainingFilters();
+      populateEvaluationTrainingOptions(selectedLogId || $('evaluationTrainingSelect')?.value || '', evaluationModalMode === 'edit');
+    }
+    function refreshEvaluationUI(selectedEvalId = '') {
+      sortEvaluationLogsInPlace();
+      applyEvaluationFilters();
+      if (selectedEvalId && !evaluationLogs.some(item => item.eval_id === selectedEvalId)) editingEvaluationId = '';
+      populateEvaluationTrainingOptions($('evaluationTrainingSelect')?.value || '', evaluationModalMode === 'edit');
+    }
+    async function ensureTrainingBootstrapForPosition(positionId) {
+      if (!positionId || moduleMainCache[positionId]) return;
+      await loadTrainingFormBootstrap(false, true);
+    }
+
+    function parseQuizAnswersValue(value) {
+      if (Array.isArray(value)) return value.map(item => String(item || '').trim().toUpperCase());
+      const raw = String(value || '').trim();
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed.map(item => String(item || '').trim().toUpperCase());
+      } catch (err) {}
+      return raw.split(',').map(item => String(item || '').trim().toUpperCase()).filter(Boolean);
+    }
+
+    function sortByOrderThenName(list, nameKey) {
+      return (Array.isArray(list) ? list : []).sort((a, b) => {
+        const ao = Number(a.sort_order || 9999);
+        const bo = Number(b.sort_order || 9999);
+        if (ao !== bo) return ao - bo;
+        return String(a[nameKey] || '').localeCompare(String(b[nameKey] || ''), 'th');
+      });
+    }
+
+    function buildModuleIndexes(moduleRows) {
+      moduleMainCache = {};
+      moduleSubCache = {};
+      (Array.isArray(moduleRows) ? moduleRows : []).forEach(row => {
+        const positionId = String(row.position_id || '').trim();
+        const moduleMainId = String(row.module_main_id || '').trim();
+        const moduleSubId = String(row.module_sub_id || '').trim();
+        if (!positionId || !moduleMainId || !moduleSubId) return;
+
+        if (!moduleMainCache[positionId]) moduleMainCache[positionId] = [];
+        if (!moduleMainCache[positionId].some(item => item.module_main_id === moduleMainId)) {
+          moduleMainCache[positionId].push({
+            module_main_id: moduleMainId,
+            module_main_name: row.module_main_name || '-',
+            quiz_group_id: normalizeKey(row.quiz_group_id || row.module_main_id || ''),
+            sort_order: Number(row.sort_order || 9999)
+          });
+        }
+
+        const cacheKey = `${positionId}__${moduleMainId}`;
+        if (!moduleSubCache[cacheKey]) moduleSubCache[cacheKey] = [];
+        moduleSubCache[cacheKey].push({
+          module_sub_id: moduleSubId,
+          module_sub_name: row.module_sub_name || '-',
+          module_main_id: moduleMainId,
+          quiz_group_id: normalizeKey(row.quiz_group_id || row.module_main_id || ''),
+          sort_order: Number(row.sort_order || 9999)
+        });
+      });
+
+      Object.keys(moduleMainCache).forEach(key => {
+        moduleMainCache[key] = sortByOrderThenName(moduleMainCache[key], 'module_main_name');
+      });
+      Object.keys(moduleSubCache).forEach(key => {
+        moduleSubCache[key] = sortByOrderThenName(moduleSubCache[key], 'module_sub_name');
+      });
+    }
+
+
+    function normalizeQuizRow(row) {
+      return {
+        quiz_id: row.quiz_id || '',
+        quiz_group_id: normalizeKey(row.quiz_group_id || row.module_main_id || ''),
+        module_main_id: normalizeKey(row.module_main_id || ''),
+        module_main_name: row.module_main_name || '',
+        module_sub_id: row.module_sub_id || '',
+        module_sub_ids: row.module_sub_ids || row.module_sub_id || '',
+        module_sub_name: row.module_sub_name || '',
+        module_sub_names: row.module_sub_names || row.module_sub_name || '',
+        question_text: row.question_text || row.question || '',
+        choice_a: row.choice_a || row.option_a || '',
+        choice_b: row.choice_b || row.option_b || '',
+        choice_c: row.choice_c || row.option_c || '',
+        choice_d: row.choice_d || row.option_d || '',
+        correct_choice: String(row.correct_choice || row.answer || '').toUpperCase(),
+        pass_score: Number(row.pass_score || 80),
+        sort_order: Number(row.sort_order || 9999)
+      };
+    }
+
+    function buildQuizIndexes(rows) {
+      quizRows = (Array.isArray(rows) ? rows : []).map(normalizeQuizRow).filter(item => item.question_text);
+      quizCacheByMain = {};
+      quizRows.forEach(item => {
+        const keys = [
+          normalizeKey(item.quiz_group_id || ''),
+          normalizeKey(item.module_main_id || ''),
+          normalizeNameKey(item.module_main_name || '')
+        ].filter(Boolean);
+        keys.forEach(key => {
+          if (!quizCacheByMain[key]) quizCacheByMain[key] = [];
+          quizCacheByMain[key].push(item);
+        });
+      });
+      Object.keys(quizCacheByMain).forEach(key => {
+        const deduped = [];
+        const seen = new Set();
+        quizCacheByMain[key].forEach(item => {
+          const itemKey = `${normalizeKey(item.quiz_id || '')}__${normalizeKey(item.question_text || '')}`;
+          if (seen.has(itemKey)) return;
+          seen.add(itemKey);
+          deduped.push(item);
+        });
+        quizCacheByMain[key] = sortByOrderThenName(deduped, 'question_text');
+      });
+    }
+
+    function getQuizQuestionsForTraining(item) {
+      if (!item) return [];
+      const candidates = [
+        normalizeKey(item.quiz_group_id || ''),
+        normalizeKey(item.module_main_id || ''),
+        normalizeNameKey(item.module_main_name || '')
+      ].filter(Boolean);
+      for (const key of candidates) {
+        if (quizCacheByMain[key] && quizCacheByMain[key].length) return quizCacheByMain[key];
+      }
+      return [];
+    }
+
+    function getQuizSelectedAnswer(index, scopeId = 'quizModalQuestions') {
+      const scope = $(scopeId);
+      if (!scope) return '';
+      const checked = scope.querySelector(`input[name="quiz_q_${index}"]:checked`);
+      return checked ? String(checked.value || '') : '';
+    }
+
+    function getQuizSummaryFromAnswers(answers) {
+      const picked = Array.isArray(answers) ? answers.map(item => String(item || '').trim().toUpperCase()) : [];
+      if (!currentEvaluationQuiz.length) {
+        return { answered: 0, correct: 0, total: 0, score: '', suggestedResult: '', complete: true };
+      }
+      let answered = 0;
+      let correct = 0;
+      currentEvaluationQuiz.forEach((q, index) => {
+        const answer = picked[index] || '';
+        if (answer) answered += 1;
+        if (answer && answer === String(q.correct_choice || '').toUpperCase()) correct += 1;
+      });
+      const total = currentEvaluationQuiz.length;
+      const complete = answered === total;
+      const score = complete ? Math.round((correct / total) * 100) : '';
+      const suggestedResult = complete ? (score >= currentQuizPassScore ? 'ผ่าน' : 'ไม่ผ่าน') : '';
+      return { answered, correct, total, score, suggestedResult, complete };
+    }
+
+    function renderQuizSummaryText(summary) {
+      if (!currentEvaluationQuiz.length) return 'Module หลักนี้ยังไม่ได้ผูกข้อสอบไว้ สามารถกรอกคะแนนเองได้';
+      if (!summary.complete) return `ยังไม่ได้สรุปข้อสอบ • ตอบแล้ว ${summary.answered}/${summary.total} ข้อ`;
+      return `ตอบถูก ${summary.correct}/${summary.total} ข้อ • คะแนน ${summary.score} • ผลแนะนำ ${summary.suggestedResult}`;
+    }
+
+    function updateQuizModalScoreChip(summary, visible = false) {
+      const chip = $('quizModalScoreChip');
+      if (!chip) return;
+      const shouldShow = !!visible && !!currentEvaluationQuiz.length && !!summary && summary.complete;
+      chip.classList.toggle('is-hidden', !shouldShow);
+      chip.textContent = shouldShow ? `คะแนน ${summary.score} • ถูก ${summary.correct}/${summary.total}` : '';
+    }
+
+    function syncEvaluationFromQuizAnswers(answers, options = {}) {
+      const summary = getQuizSummaryFromAnswers(answers);
+      currentQuizAppliedAnswers = Array.isArray(answers) ? answers.map(item => String(item || '').trim().toUpperCase()) : [];
+      $('evaluationQuizTotal').value = summary.total ? String(summary.total) : '';
+      $('evaluationQuizCorrect').value = summary.complete ? String(summary.correct) : '';
+      if (summary.complete) {
+        $('evaluationScore').value = String(summary.score);
+        $('evaluationScore').readOnly = true;
+        $('evaluationScore').placeholder = `คำนวณอัตโนมัติจาก ${summary.total} ข้อ`;
+        if ($('evaluationResult').value !== 'ต้องติดตาม' || !$('evaluationResult').value) {
+          $('evaluationResult').value = summary.suggestedResult;
+        }
+      } else if (currentEvaluationQuiz.length) {
+        $('evaluationScore').value = '';
+        $('evaluationScore').readOnly = true;
+        $('evaluationScore').placeholder = `คำนวณอัตโนมัติจาก ${summary.total} ข้อ`;
+        if ($('evaluationResult').value === 'ผ่าน' || $('evaluationResult').value === 'ไม่ผ่าน') $('evaluationResult').value = '';
+      } else {
+        $('evaluationScore').readOnly = false;
+        $('evaluationScore').placeholder = 'กรอกคะแนนเอง 0-100';
+      }
+      $('evaluationQuizHint').textContent = currentEvaluationQuiz.length
+        ? (summary.complete ? `สรุปข้อสอบแล้ว ${summary.correct}/${summary.total} ข้อ • คะแนน ${summary.score}` : `มีข้อสอบ ${summary.total} ข้อ • กดปุ่ม “ทำข้อสอบ” เพื่อเลือกคำตอบและสรุปคะแนน`)
+        : 'Module หลักนี้ยังไม่ได้ผูกข้อสอบไว้ สามารถกรอกคะแนนเองได้';
+      $('quizSummaryText').textContent = renderQuizSummaryText(summary);
+      $('openQuizModalBtn').textContent = currentEvaluationQuiz.length ? (summary.complete ? 'แก้คำตอบข้อสอบ' : 'ทำข้อสอบ') : 'ไม่มีข้อสอบ';
+      $('openQuizModalBtn').disabled = !currentEvaluationQuiz.length;
+      currentQuizScoreVisible = !!summary.complete;
+      updateQuizModalScoreChip(summary, currentQuizScoreVisible);
+      return summary;
+    }
+
+    function resetEvaluationQuizState() {
+      currentEvaluationQuiz = [];
+      currentQuizPassScore = 80;
+      currentQuizAppliedAnswers = [];
+      currentQuizDraftAnswers = [];
+      $('evaluationQuizTotal').value = '';
+      $('evaluationQuizCorrect').value = '';
+      $('evaluationScore').value = '';
+      $('evaluationScore').readOnly = false;
+      $('evaluationScore').placeholder = '0-100';
+      $('quizSummaryText').textContent = 'ยังไม่ได้ทำข้อสอบ';
+      $('openQuizModalBtn').textContent = 'ทำข้อสอบ';
+      $('openQuizModalBtn').disabled = true;
+      $('quizModalQuestions').innerHTML = '<div class="quiz-empty">ยังไม่ได้เลือกรายการสอนงาน</div>';
+      $('quizModalSub').textContent = '-';
+      currentQuizScoreVisible = false;
+      updateQuizModalScoreChip({ complete: false }, false);
+      $('evaluationQuizHint').textContent = 'เลือกรายการสอนงานก่อน ระบบจะดึงข้อสอบตาม Module หลัก ให้อัตโนมัติ';
+    }
+
+    async function loadQuizForTrainingItem(item, prefillAnswers = []) {
+      const answersToApply = Array.isArray(prefillAnswers) ? prefillAnswers.map(item => String(item || '').trim().toUpperCase()) : [];
+      if (!item) {
+        resetEvaluationQuizState();
+        return;
+      }
+      currentEvaluationQuiz = getQuizQuestionsForTraining(item);
+      $('quizModalSub').textContent = `${item.full_name || '-'} • ${item.module_main_name || '-'} > ${item.module_sub_name || '-'}`;
+      if (!currentEvaluationQuiz.length) {
+        try {
+          const res = await jsonpRequest({
+            action: 'getQuizForTraining',
+            logId: item.log_id || '',
+            moduleMainId: item.module_main_id || '',
+            moduleMainName: item.module_main_name || '',
+            quizGroupId: item.quiz_group_id || ''
+          });
+          const fetched = Array.isArray(res?.data?.quiz_rows) ? res.data.quiz_rows : [];
+          currentEvaluationQuiz = fetched.map(normalizeQuizRow).filter(q => q.question_text);
+        } catch (err) {
+          currentEvaluationQuiz = [];
+        }
+      }
+      currentQuizPassScore = currentEvaluationQuiz.length ? Number(currentEvaluationQuiz[0].pass_score || 80) : 80;
+      currentQuizDraftAnswers = answersToApply.slice();
+      currentQuizAppliedAnswers = answersToApply.slice();
+      $('evaluationQuizTotal').value = currentEvaluationQuiz.length ? String(currentEvaluationQuiz.length) : '';
+      $('evaluationQuizCorrect').value = '';
+      if (!currentEvaluationQuiz.length) {
+        $('evaluationScore').readOnly = false;
+        $('evaluationScore').placeholder = 'กรอกคะแนนเอง 0-100';
+        $('evaluationQuizHint').textContent = `ยังไม่พบข้อสอบของ Module หลักนี้ (quiz_group_id: ${item.quiz_group_id || '-'} / module_main_id: ${item.module_main_id || '-'}) สามารถกรอกคะแนนเองได้`;
+        $('quizSummaryText').textContent = `ยังไม่มีข้อสอบ 4 ตัวเลือกสำหรับ Module หลักนี้`;
+        $('openQuizModalBtn').textContent = 'ไม่มีข้อสอบ';
+        $('openQuizModalBtn').disabled = true;
+        $('quizModalQuestions').innerHTML = `<div class="quiz-empty">ยังไม่มีข้อสอบ 4 ตัวเลือกสำหรับ Module หลักนี้<br>quiz_group_id: ${escapeHtml(item.quiz_group_id || '-')} • module_main_id: ${escapeHtml(item.module_main_id || '-')}</div>`;
+        currentQuizScoreVisible = false;
+        updateQuizModalScoreChip({ complete: false }, false);
+        return;
+      }
+      $('evaluationScore').readOnly = true;
+      $('evaluationScore').placeholder = `คำนวณอัตโนมัติจาก ${currentEvaluationQuiz.length} ข้อ`;
+      currentQuizScoreVisible = getQuizSummaryFromAnswers(answersToApply).complete;
+      syncEvaluationFromQuizAnswers(answersToApply, { silent: true });
+      renderQuizModalContent();
+    }
+
+    function renderQuizModalContent() {
+      if (!currentEvaluationQuiz.length) return;
+      const answers = Array.isArray(currentQuizDraftAnswers) ? currentQuizDraftAnswers : [];
+      $('quizModalQuestions').innerHTML = `
+        <div class="quiz-meta">
+          <span class="quiz-chip">จำนวนข้อ ${currentEvaluationQuiz.length}</span>
+          <span class="quiz-chip">เกณฑ์ผ่าน ${currentQuizPassScore} คะแนน</span>
+        </div>
+        <div class="quiz-list">
+          ${currentEvaluationQuiz.map((q, index) => `
+            <div class="quiz-item">
+              <div class="quiz-qhead">
+                <span class="quiz-qindex">${index + 1}</span>
+                <div class="quiz-qtext">${escapeHtml(q.question_text || '-')}</div>
+              </div>
+              <div class="choice-list">
+                ${['A','B','C','D'].map(choice => `
+                  <label class="choice-option">
+                    <input type="radio" name="quiz_q_${index}" value="${choice}" ${answers[index] === choice ? 'checked' : ''}>
+                    <span class="choice-badge">${choice}</span>
+                    <span class="choice-text">${escapeHtml(q['choice_' + choice.toLowerCase()] || '-')}</span>
+                  </label>
+                `).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>`;
+      const summary = getQuizSummaryFromAnswers(answers);
+      updateQuizModalScoreChip(summary, currentQuizScoreVisible && summary.complete);
+    }
+
+    function openQuizModal() {
+      if (!currentEvaluationQuiz.length) return;
+      currentQuizDraftAnswers = (currentQuizAppliedAnswers.length ? currentQuizAppliedAnswers : currentQuizDraftAnswers).slice();
+      renderQuizModalContent();
+      hideMessage('quizModalMsg');
+      $('quizModal').classList.add('show');
+    }
+
+    function closeQuizModal() {
+      $('quizModal').classList.remove('show');
+    }
+
+    function handleQuizModalChange() {
+      if (!currentEvaluationQuiz.length) return;
+      currentQuizDraftAnswers = currentEvaluationQuiz.map((_, index) => getQuizSelectedAnswer(index, 'quizModalQuestions'));
+      currentQuizScoreVisible = false;
+      updateQuizModalScoreChip(getQuizSummaryFromAnswers(currentQuizDraftAnswers), false);
+    }
+
+    function applyQuizModalAnswers() {
+      hideMessage('quizModalMsg');
+      if (!currentEvaluationQuiz.length) return closeQuizModal();
+      currentQuizDraftAnswers = currentEvaluationQuiz.map((_, index) => getQuizSelectedAnswer(index, 'quizModalQuestions'));
+      const summary = getQuizSummaryFromAnswers(currentQuizDraftAnswers);
+      if (!summary.complete) {
+        return showMessage('quizModalMsg', 'error', `กรุณาตอบข้อสอบให้ครบทุกข้อ (${summary.answered}/${summary.total})`);
+      }
+      currentQuizScoreVisible = true;
+      syncEvaluationFromQuizAnswers(currentQuizDraftAnswers);
+      closeQuizModal();
+    }
+
+
+    function scrollToSection(sectionId) {
+      const el = $(sectionId);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    function getEmployeeStatusClass(status) {
+      if (status === 'ทำงาน') return 'active';
+      if (status === 'ย้ายสาขา') return 'pause';
+      return 'inactive';
+    }
+    function setEmployeeStats(list) {
+      $('totalEmployees').textContent = employees.length;
+      $('activeEmployees').textContent = employees.filter(x => (x.status || 'ทำงาน') === 'ทำงาน').length;
+      $('visibleEmployees').textContent = list.length;
+    }
+    function renderEmployeeTable(list) {
+      const tbody = $('employeeTableBody');
+      setEmployeeStats(list);
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="10" class="empty">ไม่พบข้อมูลพนักงานตามเงื่อนไขที่ค้นหา</td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map(item => `
+        <tr>
+          <td><strong>${escapeHtml(item.employee_code || item.employee_id || '-')}</strong></td>
+          <td>${escapeHtml(item.employee_name || '-')}</td>
+          <td>${escapeHtml(item.nickname || '-')}</td>
+          <td>${escapeHtml(item.position_name || item.position || '-')}</td>
+          <td>${escapeHtml(formatDate(item.start_date))}</td>
+          <td><span class="employee-status ${getEmployeeStatusClass(item.status)}">${escapeHtml(item.status || '-')}</span></td>
+          <td>${escapeHtml(item.updated_by || '-')}</td>
+          <td>${escapeHtml(formatDateTime(item.updated_at || '', item.start_date || ''))}</td>
+          <td>${escapeHtml(item.remark || '-')}</td>
+          <td class="action-col"><div class="action-stack">
+            <button class="ghost-btn small-btn inline-edit-employee-btn" data-employee-id="${escapeHtml(item.employee_id)}">แก้ไข</button>
+            <button class="ghost-btn small-btn danger-btn inline-delete-employee-btn" data-employee-id="${escapeHtml(item.employee_id)}">ลบ</button>
+          </div></td>
+        </tr>`).join('');
+    }
+    function applyEmployeeFilters() {
+      const q = ($('employeeSearchInput').value || '').trim().toLowerCase();
+      const status = $('employeeStatusFilter').value || '';
+      filteredEmployees = employees.filter(item => {
+        const hay = [item.employee_id, item.employee_code, item.employee_name, item.nickname, item.position_name || item.position].join(' ').toLowerCase();
+        const okText = !q || hay.includes(q);
+        const okStatus = !status || (item.status || 'ทำงาน') === status;
+        return okText && okStatus;
+      });
+      renderEmployeeTable(filteredEmployees);
+    }
+    function renderPositionOptions(selectedValue = '') {
+      const select = $('position');
+      if (!select) return;
+      const current = selectedValue || select.value || '';
+      const opts = ['<option value="">เลือกตำแหน่ง</option>'];
+      positions.forEach(item => {
+        const value = item.position_name || item.position || '';
+        const selected = value === current ? ' selected' : '';
+        opts.push(`<option value="${escapeHtml(value)}" data-position-id="${escapeHtml(item.position_id || '')}"${selected}>${escapeHtml(value)}</option>`);
+      });
+      select.innerHTML = opts.join('');
+      select.value = current;
+    }
+    function getSelectedPositionId() {
+      const select = $('position');
+      const opt = select && select.selectedOptions && select.selectedOptions[0] ? select.selectedOptions[0] : null;
+      return opt ? (opt.dataset.positionId || '') : '';
+    }
+    async function loadPositions() {
+      const res = await jsonpRequest({ action: 'getPositions' });
+      if (!res.ok) throw new Error(res.message || 'โหลดตำแหน่งไม่สำเร็จ');
+      positions = Array.isArray(res.data) ? res.data : [];
+      renderPositionOptions();
+    }
+
+    async function ensurePositionsLoaded() {
+      if (positions.length) return;
+      await loadPositions();
+    }
+
+    async function loadBranchDashboard(showMsg = false, forceFresh = false) {
+      if (showMsg) {
+        showMessage('employeeMsg', 'info', 'กำลังโหลดข้อมูลพนักงาน...');
+        showMessage('trainingMsg', 'info', 'กำลังโหลดข้อมูลการสอนงาน...');
+        showMessage('evaluationMsg', 'info', 'กำลังโหลดข้อมูลประเมินผล...');
+      }
+      const res = await jsonpRequest({
+        action: 'getBranchDashboardData',
+        branchCode: auth.branch_code,
+        forceFresh: forceFresh ? '1' : '0'
+      });
+      if (!res.ok) throw new Error(res.message || 'โหลดข้อมูลหน้า Dashboard ไม่สำเร็จ');
+      const data = res.data || {};
+      employees = (Array.isArray(data.employees) ? data.employees : []).map(normalizeEmployee);
+      trainingLogs = (Array.isArray(data.training_logs) ? data.training_logs : []).map(normalizeTraining);
+      evaluationLogs = (Array.isArray(data.evaluation_logs) ? data.evaluation_logs : []).map(normalizeEvaluation);
+      applyEmployeeFilters();
+      applyTrainingFilters();
+      applyEvaluationFilters();
+      populateEvaluationTrainingOptions();
+    }
+    function setEmployeeModalStep(step) {
+      $('employeeSummaryCard').classList.toggle('show', step === 'summary');
+      $('employeeFormFields').classList.toggle('hidden', step === 'summary');
+      $('editEmployeeSummaryBtn').classList.toggle('hidden', step !== 'summary');
+      $('saveEmployeeBtn').classList.toggle('hidden', step !== 'summary');
+      $('reviewEmployeeBtn').classList.toggle('hidden', step === 'summary');
+    }
+    function openEmployeeModal(mode = 'add', item = null) {
+      $('employeeModal').classList.add('show');
+      $('employeeMode').value = mode;
+      hideMessage('employeeModalMsg');
+      setEmployeeModalStep('form');
+      if (mode === 'add') {
+        $('employeeModalTitle').textContent = 'เพิ่มพนักงาน';
+        $('employeeForm').reset();
+        renderPositionOptions();
+        $('status').value = 'ทำงาน';
+        $('startDate').value = getTodayISO();
+        $('editingEmployeeId').value = '';
+      } else {
+        $('employeeModalTitle').textContent = 'แก้ไขข้อมูลพนักงาน';
+        $('editingEmployeeId').value = item.employee_id || '';
+        $('employeeCode').value = item.employee_code || '';
+        $('employeeName').value = item.employee_name || '';
+        $('nickname').value = item.nickname || '';
+        renderPositionOptions(item.position_name || item.position || '');
+        $('startDate').value = item.start_date ? String(item.start_date).slice(0,10) : getTodayISO();
+        $('status').value = item.status || 'ทำงาน';
+        $('submitterName').value = item.updated_by || '';
+        $('remark').value = item.remark || '';
+      }
+    }
+    function closeEmployeeModal() { $('employeeModal').classList.remove('show'); setEmployeeModalStep('form'); }
+    function buildEmployeePayload() {
+      return {
+        branchCode: auth?.branch_code || '',
+        branchName: auth?.branch_name || '',
+        employeeCode: $('employeeCode').value.trim(),
+        employeeName: $('employeeName').value.trim(),
+        nickname: $('nickname').value.trim(),
+        positionId: getSelectedPositionId(),
+        position: $('position').value.trim(),
+        startDate: $('startDate').value.trim(),
+        status: $('status').value.trim(),
+        remark: $('remark').value.trim(),
+        updatedBy: $('submitterName').value.trim()
+      };
+    }
+    function validateEmployeePayload(payload) {
+      if (!payload.employeeCode) return 'กรุณากรอกรหัสพนักงาน';
+      if (!payload.employeeName) return 'กรุณากรอกชื่อ-นามสกุล';
+      if (!payload.nickname) return 'กรุณากรอกชื่อเล่น';
+      if (!payload.startDate) return 'กรุณาเลือกวันเริ่มงาน';
+      if (!payload.position) return 'กรุณาเลือกตำแหน่ง';
+      if (!payload.status) return 'กรุณาเลือกสถานะ';
+      if (!payload.updatedBy) return 'กรุณากรอกผู้ลงข้อมูล';
+      return '';
+    }
+    function renderEmployeeSummary(payload) {
+      const rows = [
+        ['รหัสพนักงาน', payload.employeeCode], ['ชื่อ-นามสกุล', payload.employeeName], ['ชื่อเล่น', payload.nickname],
+        ['วันเริ่มงาน', formatDate(payload.startDate)], ['ตำแหน่ง', payload.position], ['สถานะ', payload.status],
+        ['ผู้ลงข้อมูล', payload.updatedBy], ['หมายเหตุ', payload.remark || '-']
+      ];
+      $('employeeSummaryGrid').innerHTML = rows.map(([label, value]) => `<div class="summary-item"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(value || '-')}</span></div>`).join('');
+    }
+    async function reviewEmployee() {
+      hideMessage('employeeModalMsg');
+      const payload = buildEmployeePayload();
+      const error = validateEmployeePayload(payload);
+      if (error) {
+        showMessage('employeeModalMsg', 'error', error);
+        await showPrettyAlert('กรอกข้อมูลไม่ครบ', error, 'warning');
+        return;
+      }
+      renderEmployeeSummary(payload);
+      setEmployeeModalStep('summary');
+    }
+    async function refreshEmployeeData(showMsg = false) {
+      try {
+        if (showMsg) showMessage('employeeMsg', 'info', 'กำลังโหลดข้อมูลพนักงาน...');
+        const res = await jsonpRequest({ action: 'getEmployeesByBranch', branchCode: auth.branch_code, forceFresh: '1' });
+        if (!res.ok) throw new Error(res.message || 'โหลดข้อมูลพนักงานไม่สำเร็จ');
+        employees = (Array.isArray(res.data) ? res.data : []).map(normalizeEmployee);
+        refreshEmployeeUI();
+        showMessage('employeeMsg', 'success', `โหลดข้อมูลสำเร็จ ${employees.length} รายการ`);
+      } catch (err) {
+        employees = [];
+        filteredEmployees = [];
+        renderEmployeeTable([]);
+        showMessage('employeeMsg', 'error', err.message || 'เกิดข้อผิดพลาดในการโหลดข้อมูลพนักงาน');
+      }
+    }
+    async function saveEmployee() {
+      const mode = $('employeeMode').value;
+      const payload = buildEmployeePayload();
+      const error = validateEmployeePayload(payload);
+      if (error) {
+        showMessage('employeeModalMsg', 'error', error);
+        setEmployeeModalStep('form');
+        await showPrettyAlert('กรอกข้อมูลไม่ครบ', error, 'warning');
+        return;
+      }
+      try {
+        $('saveEmployeeBtn').disabled = true;
+        showBlockingDialog('กำลังบันทึกข้อมูล', mode === 'add' ? 'ระบบกำลังเพิ่มข้อมูลพนักงาน กรุณารอสักครู่' : 'ระบบกำลังอัปเดตข้อมูลพนักงาน กรุณารอสักครู่');
+        let res;
+        if (mode === 'add') {
+          res = await jsonpRequest({ action: 'addEmployee', ...payload });
+        } else {
+          res = await jsonpRequest({ action: 'updateEmployee', branchCode: auth.branch_code, employeeId: $('editingEmployeeId').value, ...payload });
+        }
+        if (!res.ok) throw new Error(res.message || 'บันทึกข้อมูลไม่สำเร็จ');
+        upsertByKey(employees, buildLocalEmployeeRow(payload, res, mode), 'employee_id');
+        await ensureTrainingBootstrapForPosition(payload.positionId);
+        refreshEmployeeUI();
+        closeEmployeeModal();
+        hideBlockingDialog();
+        showMessage('employeeMsg', 'success', mode === 'add' ? 'เพิ่มพนักงานสำเร็จ' : 'อัปเดตข้อมูลพนักงานสำเร็จ');
+        await showPrettyAlert('บันทึกข้อมูลสำเร็จ', mode === 'add' ? 'ระบบบันทึกข้อมูลพนักงานเรียบร้อยแล้ว' : 'ระบบอัปเดตข้อมูลพนักงานเรียบร้อยแล้ว', 'success');
+      } catch (err) {
+        hideBlockingDialog();
+        showMessage('employeeModalMsg', 'error', err.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+      } finally {
+        hideBlockingDialog();
+        $('saveEmployeeBtn').disabled = false;
+      }
+    }
+    async function deleteEmployeeRecord(employeeId) {
+      const item = employees.find(x => x.employee_id === employeeId);
+      if (!item) return showMessage('employeeMsg', 'error', 'ไม่พบข้อมูลพนักงานที่ต้องการลบ');
+      const ok = await showPrettyConfirm('ยืนยันลบพนักงาน', `${item.employee_name || '-'}
+รหัส ${item.employee_code || item.employee_id || '-'}
+การลบนี้จะนำชื่อออกจากทะเบียนพนักงานของสาขา`, 'danger', 'ลบพนักงาน', 'ยกเลิก');
+      if (!ok) return;
+      try {
+        showBlockingDialog('กำลังลบข้อมูล', `ระบบกำลังลบข้อมูลพนักงาน ${item.employee_name || ''} กรุณารอสักครู่`);
+        const res = await jsonpRequest({ action: 'deleteEmployee', branchCode: auth.branch_code, employeeId: item.employee_id, deletedBy: auth.manager_name || auth.branch_code });
+        if (!res.ok) throw new Error(res.message || 'ลบข้อมูลไม่สำเร็จ');
+        removeByKey(employees, 'employee_id', item.employee_id);
+        refreshEmployeeUI();
+        hideBlockingDialog();
+        showMessage('employeeMsg', 'success', `ลบพนักงาน ${item.employee_name || ''} เรียบร้อย`);
+        await showPrettyAlert('ลบข้อมูลสำเร็จ', `ระบบลบพนักงาน ${item.employee_name || ''} เรียบร้อยแล้ว`, 'success');
+      } catch (err) {
+        hideBlockingDialog();
+        showMessage('employeeMsg', 'error', err.message || 'เกิดข้อผิดพลาดในการลบพนักงาน');
+      } finally {
+        hideBlockingDialog();
+      }
+    }
+
+    function setTrainingStats(list) {
+      const evaluatedIds = new Set(evaluationLogs.map(x => x.log_id));
+      $('totalTrainingLogs').textContent = trainingLogs.length;
+      $('pendingTrainingLogs').textContent = trainingLogs.filter(x => !evaluatedIds.has(x.log_id)).length;
+      $('visibleTrainingLogs').textContent = list.length;
+    }
+    function setEvaluationStats(list) {
+      $('totalEvaluations').textContent = evaluationLogs.length;
+      $('passedEvaluations').textContent = evaluationLogs.filter(x => x.result === 'ผ่าน').length;
+      $('visibleEvaluations').textContent = list.length;
+    }
+
+    async function loadTrainingFormBootstrap(showMsg = false, forceFresh = false) {
+      if (trainingFormReady && !forceFresh) return;
+      if (showMsg) showMessage('trainingMsg', 'info', 'กำลังโหลดรายชื่อพนักงาน หัวข้อสอน และข้อสอบ...');
+      const res = await jsonpRequest({ action: 'getTrainingFormBootstrap', branchCode: auth.branch_code, forceFresh: forceFresh ? '1' : '0' });
+      if (!res.ok) throw new Error(res.message || 'โหลดข้อมูลฟอร์มการสอนไม่สำเร็จ');
+      const payload = res.data || {};
+      employees = (Array.isArray(payload.employees) ? payload.employees : []).map(normalizeEmployee);
+      buildModuleIndexes(Array.isArray(payload.module_rows) ? payload.module_rows : []);
+      buildQuizIndexes(Array.isArray(payload.quiz_rows) ? payload.quiz_rows : []);
+      populateTrainingEmployeeOptions();
+      trainingFormReady = true;
+    }
+
+    function getEvaluationByLogId(logId) { return evaluationLogs.find(item => item.log_id === logId) || null; }
+
+    function renderTrainingTable(list) {
+      const tbody = $('trainingTableBody');
+      setTrainingStats(list);
+      if (!list.length) return tbody.innerHTML = '<tr><td colspan="10" class="empty">ไม่พบข้อมูลการสอนงาน</td></tr>';
+      tbody.innerHTML = list.map(item => {
+        const evaluated = getEvaluationByLogId(item.log_id);
+        return `
+          <tr>
+            <td>${escapeHtml(formatDateTime(item.training_datetime || item.created_at, item.training_date))}</td>
+            <td><strong>${escapeHtml(item.full_name || '-')}</strong></td>
+            <td>${escapeHtml(item.position_name || '-')}</td>
+            <td>${escapeHtml(item.module_main_name || '-')}</td>
+            <td>${escapeHtml(item.module_sub_names || item.module_sub_name || '-')}</td>
+            <td>${escapeHtml(item.trainer_name || '-')}</td>
+            <td>${escapeHtml(item.recorder_name || '-')}</td>
+            <td>${evaluated ? '<span class="badge done">ประเมินแล้ว</span>' : '<span class="badge pending">รอประเมิน</span>'}</td>
+            <td>${escapeHtml(item.note || '-')}</td>
+            <td class="action-col" style="text-align:center">
+              <div class="action-stack">
+                <button class="ghost-btn small-btn inline-edit-training-btn" data-log-id="${escapeHtml(item.log_id)}">แก้ไข</button>
+                <button class="ghost-btn small-btn inline-eval-btn" data-log-id="${escapeHtml(item.log_id)}">${evaluated ? 'ดูผลประเมิน' : 'ประเมินผล'}</button>
+                <button class="ghost-btn small-btn danger-btn inline-delete-training-btn" data-log-id="${escapeHtml(item.log_id)}">ลบ</button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    function renderEvaluationTable(list) {
+      const tbody = $('evaluationTableBody');
+      setEvaluationStats(list);
+      if (!list.length) return tbody.innerHTML = '<tr><td colspan="9" class="empty">ไม่พบข้อมูลประเมินผล</td></tr>';
+      tbody.innerHTML = list.map(item => `
+        <tr>
+          <td>${escapeHtml(formatDateTime(item.evaluation_datetime || item.created_at, item.evaluation_date))}</td>
+          <td>${escapeHtml(item.full_name || '-')}</td>
+          <td>${escapeHtml(item.position_name || '-')}</td>
+          <td>${escapeHtml(item.module_main_name || '-')}</td>
+          <td>${escapeHtml(item.module_sub_names || item.module_sub_name || '-')}</td>
+          <td><span class="status ${item.result === 'ผ่าน' ? 'active' : (item.result === 'ต้องติดตาม' ? 'pause' : 'inactive')}">${escapeHtml(item.result || '-')}</span></td>
+          <td>${escapeHtml(item.score || '-')}</td>
+          <td>${escapeHtml(item.evaluator_name || '-')}</td>
+          <td class="action-col">
+            <div class="action-stack">
+              <button class="ghost-btn small-btn inline-edit-evaluation-btn" data-eval-id="${escapeHtml(item.eval_id)}">แก้ไข</button>
+              <button class="ghost-btn small-btn danger-btn inline-delete-evaluation-btn" data-eval-id="${escapeHtml(item.eval_id)}">ลบ</button>
+            </div>
+          </td>
+        </tr>`).join('');
+    }
+
+    function applyTrainingFilters() {
+      const q = $('trainingSearchInput').value.trim().toLowerCase();
+      filteredTrainingLogs = trainingLogs.filter(item => [item.employee_code, item.full_name, item.position_name, item.module_main_name, item.module_sub_names || item.module_sub_name, item.trainer_name, item.recorder_name].join(' ').toLowerCase().includes(q) || !q);
+      renderTrainingTable(filteredTrainingLogs);
+    }
+    function applyEvaluationFilters() {
+      const q = $('evaluationSearchInput').value.trim().toLowerCase();
+      filteredEvaluationLogs = evaluationLogs.filter(item => [item.full_name, item.position_name, item.module_main_name, item.module_sub_names || item.module_sub_name, item.result, item.evaluator_name].join(' ').toLowerCase().includes(q) || !q);
+      renderEvaluationTable(filteredEvaluationLogs);
+    }
+
+    async function loadTrainingLogs(showMsg = true) {
+      if (showMsg) showMessage('trainingMsg', 'info', 'กำลังโหลดข้อมูลการสอนงาน...');
+      const res = await jsonpRequest({ action: 'getTrainingLogsByBranch', branchCode: auth.branch_code });
+      if (!res.ok) throw new Error(res.message || 'โหลดรายการสอนงานไม่สำเร็จ');
+      trainingLogs = (Array.isArray(res.data) ? res.data : []).map(normalizeTraining);
+      sortTrainingLogsInPlace();
+      applyTrainingFilters();
+      if (showMsg) showMessage('trainingMsg', 'success', `โหลดรายการสอนงานสำเร็จ ${trainingLogs.length} รายการ`);
+    }
+    async function loadEvaluationLogs(showMsg = true) {
+      if (showMsg) showMessage('evaluationMsg', 'info', 'กำลังโหลดข้อมูลประเมินผล...');
+      const res = await jsonpRequest({ action: 'getEvaluationLogsByBranch', branchCode: auth.branch_code });
+      if (!res.ok) throw new Error(res.message || 'โหลดผลประเมินไม่สำเร็จ');
+      evaluationLogs = (Array.isArray(res.data) ? res.data : []).map(normalizeEvaluation);
+      sortEvaluationLogsInPlace();
+      applyEvaluationFilters();
+      if (showMsg) showMessage('evaluationMsg', 'success', `โหลดผลประเมินสำเร็จ ${evaluationLogs.length} รายการ`);
+    }
+
+    function populateTrainingEmployeeOptions(selectedId = '') {
+      const opts = ['<option value="">เลือกพนักงาน</option>'];
+      employees.filter(item => item.status !== 'deleted').forEach(item => {
+        const selected = item.employee_id === selectedId ? ' selected' : '';
+        opts.push(`<option value="${escapeHtml(item.employee_id)}"${selected}>${escapeHtml(item.employee_name || '-')}</option>`);
+      });
+      $('trainingEmployeeSelect').innerHTML = opts.join('');
+      $('trainingEmployeeSelect').value = selectedId;
+    }
+
+    function getEmployeeById(employeeId) { return employees.find(item => item.employee_id === employeeId) || null; }
+    function loadModuleMainOptions(positionId) {
+      const opts = ['<option value="">เลือก Module หลัก</option>'];
+      (moduleMainCache[positionId] || []).forEach(item => opts.push(`<option value="${escapeHtml(item.module_main_id)}">${escapeHtml(item.module_main_name || '-')}</option>`));
+      $('trainingModuleMain').innerHTML = opts.join('');
+    }
+    function buildModuleSubToken(item) {
+      return `${String(item?.module_sub_id || '').trim()}||${String(item?.module_sub_name || '').trim()}`;
+    }
+    function getTrainingSelectedModuleSubIds() {
+      return Array.from(($('trainingModuleSubSelect')?.selectedOptions || [])).map(el => String(el.value || '').trim()).filter(Boolean);
+    }
+    function toggleTrainingModuleSubMenu(forceOpen) {
+      const menu = $('trainingModuleSubMenu');
+      const toggle = $('trainingModuleSubToggle');
+      if (!menu || !toggle || toggle.disabled) return;
+      const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : !menu.classList.contains('show');
+      menu.classList.toggle('show', shouldOpen);
+      toggle.classList.toggle('is-open', shouldOpen);
+      toggle.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+    }
+    function renderTrainingModuleSubMenu() {
+      const select = $('trainingModuleSubSelect');
+      const menu = $('trainingModuleSubMenu');
+      if (!select || !menu) return;
+      const options = Array.from(select.options || []).filter(opt => String(opt.value || '').trim());
+      if (!options.length) {
+        menu.innerHTML = `<div class="multi-select-empty">${escapeHtml(select.dataset.emptyText || 'ไม่พบหัวข้อย่อยสำหรับ Module นี้')}</div>`;
+        return;
+      }
+      menu.innerHTML = options.map((opt, idx) => {
+        const value = String(opt.value || '').trim();
+        const name = String(opt.dataset.name || opt.textContent || value).trim() || '-';
+        const id = `trainingModuleSubOpt_${idx}`;
+        return `<label class="multi-select-option" for="${id}"><input id="${id}" type="checkbox" value="${escapeHtml(value)}" ${opt.selected ? 'checked' : ''}><span>${escapeHtml(name)}</span></label>`;
+      }).join('');
+      menu.querySelectorAll('input[type="checkbox"]').forEach(box => {
+        box.addEventListener('change', (e) => {
+          const wanted = String(e.target.value || '').trim();
+          Array.from(select.options || []).forEach(opt => {
+            if (String(opt.value || '').trim() === wanted) opt.selected = !!e.target.checked;
+          });
+          updateTrainingModuleSubSummary();
+        });
+      });
+    }
+    function updateTrainingModuleSubSummary() {
+      const select = $('trainingModuleSubSelect');
+      const toggle = $('trainingModuleSubToggle');
+      const summary = $('trainingModuleSubSummary');
+      const checked = Array.from((select?.selectedOptions || []));
+      const hasItems = Array.from(select?.options || []).some(opt => String(opt.value || '').trim());
+      if (toggle) toggle.disabled = !hasItems;
+      if (!hasItems) {
+        const emptyText = String(select?.dataset.emptyText || 'เลือก Module หลักก่อน').trim() || 'เลือก Module หลักก่อน';
+        if (toggle) toggle.textContent = emptyText;
+        if (summary) {
+          summary.textContent = emptyText;
+          summary.classList.add('muted');
+        }
+        return;
+      }
+      if (!checked.length) {
+        if (toggle) toggle.textContent = 'เลือกหัวข้อย่อย';
+        if (summary) {
+          summary.textContent = 'ยังไม่ได้เลือกหัวข้อย่อย';
+          summary.classList.add('muted');
+        }
+        return;
+      }
+      const names = checked.map(el => el.dataset.name || el.textContent || el.value).filter(Boolean);
+      if (toggle) toggle.textContent = checked.length === 1 ? names[0] : `เลือกแล้ว ${checked.length} หัวข้อย่อย`;
+      if (summary) {
+        summary.textContent = `เลือก ${checked.length} หัวข้อย่อย • ${names.join(' / ')}`;
+        summary.classList.remove('muted');
+      }
+    }
+    function setTrainingModuleSubEmptyState(message) {
+      const select = $('trainingModuleSubSelect');
+      if (!select) return;
+      const text = String(message || 'เลือก Module หลักก่อน').trim() || 'เลือก Module หลักก่อน';
+      select.dataset.emptyText = text;
+      select.innerHTML = `<option value="">${escapeHtml(text)}</option>`;
+      renderTrainingModuleSubMenu();
+      updateTrainingModuleSubSummary();
+      toggleTrainingModuleSubMenu(false);
+    }
+    function loadModuleSubOptions(positionId, moduleMainId) {
+      const cacheKey = `${positionId}__${moduleMainId}`;
+      const items = moduleSubCache[cacheKey] || [];
+      const select = $('trainingModuleSubSelect');
+      if (!items.length) {
+        setTrainingModuleSubEmptyState('ไม่พบหัวข้อย่อยสำหรับ Module นี้');
+        return;
+      }
+      select.dataset.emptyText = 'เลือกหัวข้อย่อย';
+      select.innerHTML = items.map(item => `<option value="${escapeHtml(buildModuleSubToken(item))}" data-id="${escapeHtml(item.module_sub_id)}" data-name="${escapeHtml(item.module_sub_names || item.module_sub_name || '-')}">${escapeHtml(item.module_sub_names || item.module_sub_name || '-')}</option>`).join('');
+      renderTrainingModuleSubMenu();
+      updateTrainingModuleSubSummary();
+    }
+    function handleTrainingEmployeeChange() {
+      hideMessage('trainingModalMsg');
+      const employee = getEmployeeById($('trainingEmployeeSelect').value);
+      if ($('trainingPositionName')) $('trainingPositionName').textContent = employee ? (employee.position_name || '-') : '-';
+      if (employee) {
+        loadModuleMainOptions(employee.position_id || '');
+      } else {
+        $('trainingModuleMain').innerHTML = '<option value="">เลือก Module หลัก</option>';
+      }
+      setTrainingModuleSubEmptyState('เลือก Module หลักก่อน');
+    }
+    function handleTrainingModuleMainChange() {
+      hideMessage('trainingModalMsg');
+      const employee = getEmployeeById($('trainingEmployeeSelect').value);
+      loadModuleSubOptions(employee ? employee.position_id : '', $('trainingModuleMain').value);
+    }
+
+    async function openTrainingModal() {
+      hideMessage('trainingModalMsg');
+      setTrainingModalMode('create');
+      editingTrainingLogId = '';
+      $('trainingModal').classList.add('show');
+      setLockedCurrentDateTime('training');
+      $('trainerName').value = '';
+      $('trainingRecorderName').value = '';
+      $('trainingNote').value = '';
+      $('trainingEmployeeSelect').value = '';
+      if ($('trainingPositionName')) $('trainingPositionName').textContent = '-';
+      $('trainingModuleMain').innerHTML = '<option value="">เลือก Module หลัก</option>';
+      setTrainingModuleSubEmptyState('เลือก Module หลักก่อน');
+
+      try {
+        await loadTrainingFormBootstrap(false, !trainingFormReady);
+        hideMessage('trainingModalMsg');
+      } catch (err) {
+        showMessage('trainingModalMsg', 'error', err.message || 'โหลดรายชื่อพนักงานไม่สำเร็จ');
+      }
+    }
+
+    async function openTrainingEditModal(logId) {
+      hideMessage('trainingModalMsg');
+      const item = getTrainingLogById(logId);
+      if (!item) {
+        showMessage('trainingMsg', 'error', 'ไม่พบรายการสอนงานที่ต้องการแก้ไข');
+        return;
+      }
+      setTrainingModalMode('edit');
+      editingTrainingLogId = item.log_id;
+      $('trainingModal').classList.add('show');
+      $('trainingDate').value = item.training_date || '';
+      $('trainingDateTimeDisplay').textContent = formatDateTime(item.training_datetime || item.created_at, item.training_date);
+      try {
+        await loadTrainingFormBootstrap(false, !trainingFormReady);
+      } catch (err) {
+        showMessage('trainingModalMsg', 'error', err.message || 'โหลดข้อมูลแก้ไขไม่สำเร็จ');
+        return;
+      }
+      populateTrainingEmployeeOptions(item.employee_id);
+      $('trainingEmployeeSelect').value = item.employee_id || '';
+      handleTrainingEmployeeChange();
+      $('trainingModuleMain').value = item.module_main_id || '';
+      handleTrainingModuleMainChange();
+      preselectTrainingModuleSubIds(String(item.module_sub_ids || item.module_sub_id || '').split(',').map(v => v.trim()).filter(Boolean));
+      $('trainerName').value = item.trainer_name || '';
+      $('trainingRecorderName').value = item.recorder_name || '';
+      $('trainingNote').value = item.note || '';
+      hideMessage('trainingModalMsg');
+    }
+
+    function closeTrainingModal() {
+      $('trainingModal').classList.remove('show');
+      toggleTrainingModuleSubMenu(false);
+    }
+
+    function buildTrainingPayload() {
+      const employee = getEmployeeById($('trainingEmployeeSelect').value);
+      return {
+        logId: editingTrainingLogId,
+        branchCode: auth?.branch_code || '',
+        employeeId: employee?.employee_id || '',
+        trainingDate: $('trainingDate').value.trim(),
+        moduleMainId: $('trainingModuleMain').value.trim(),
+        moduleSubIds: getTrainingSelectedModuleSubIds().join(','),
+        trainerName: $('trainerName').value.trim(),
+        recorderName: $('trainingRecorderName').value.trim(),
+        note: $('trainingNote').value.trim()
+      };
+    }
+    function validateTrainingPayload(payload) {
+      if (!payload.employeeId) return 'กรุณาเลือกพนักงาน';
+      if (!payload.trainingDate) return 'ไม่สามารถสร้างวันที่บันทึกได้';
+      if (!payload.moduleMainId) return 'กรุณาเลือก Module หลัก';
+      if (!payload.moduleSubIds) return 'กรุณาเลือกหัวข้อย่อยอย่างน้อย 1 รายการ';
+            if (!payload.trainerName) return 'กรุณากรอกผู้สอน';
+      if (!payload.recorderName) return 'กรุณากรอกผู้บันทึก';
+      return '';
+    }
+    async function saveTrainingLog() {
+      hideMessage('trainingModalMsg');
+      const payload = buildTrainingPayload();
+      const error = validateTrainingPayload(payload);
+      if (error) { await showPrettyAlert('กรอกข้อมูลบันทึกการสอนงานให้ครบ', error, 'warning'); return showMessage('trainingModalMsg', 'error', error); }
+      const btn = $('saveTrainingBtn');
+      const oldText = btn.textContent;
+      btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
+      showBlockingDialog('กำลังบันทึกข้อมูล', trainingModalMode === 'edit' ? 'ระบบกำลังบันทึกการแก้ไขการสอนงาน กรุณารอสักครู่' : 'ระบบกำลังบันทึกการสอนงาน กรุณารอสักครู่');
+      try {
+        const action = trainingModalMode === 'edit' ? 'updateTrainingLog' : 'addTrainingLog';
+        const res = await jsonpRequest({ action, ...payload });
+        if (!res.ok) throw new Error(res.message || (trainingModalMode === 'edit' ? 'แก้ไขรายการสอนงานไม่สำเร็จ' : 'บันทึกการสอนงานไม่สำเร็จ'));
+        const localItem = buildLocalTrainingRow(payload, res);
+        upsertByKey(trainingLogs, localItem, 'log_id');
+        syncEvaluationFromTraining(localItem);
+        refreshTrainingUI(localItem.log_id);
+        refreshEvaluationUI();
+        latestTrainingForEvaluation = trainingModalMode === 'edit' ? '' : localItem.log_id;
+        closeTrainingModal();
+        hideBlockingDialog();
+        if (trainingModalMode === 'edit') {
+          hidePostTrainingAction();
+          showMessage('trainingMsg', 'success', 'แก้ไขรายการสอนงานสำเร็จ');
+          await showPrettyAlert('บันทึกการสอนงานสำเร็จ', 'ระบบบันทึกการแก้ไขรายการสอนงานเรียบร้อยแล้ว', 'success');
+        } else {
+          showPostTrainingAction(latestTrainingForEvaluation);
+          const savedCount = Number(res.saved_count || 1);
+          showMessage('trainingMsg', 'success', savedCount > 1 ? `บันทึกการสอนงานสำเร็จ ${savedCount} หัวข้อ และพร้อมประเมินผลต่อ` : 'บันทึกการสอนงานสำเร็จ กดประเมินผลรายการนี้ต่อได้ทันที');
+          await showPrettyAlert('บันทึกการสอนงานสำเร็จ', savedCount > 1 ? `บันทึกเรียบร้อย ${savedCount} หัวข้อ` : 'ระบบบันทึกการสอนงานเรียบร้อยแล้ว', 'success');
+        }
+      } catch (err) {
+        hideBlockingDialog();
+        showMessage('trainingModalMsg', 'error', err.message || 'เกิดข้อผิดพลาดในการบันทึกการสอนงาน');
+      } finally {
+        hideBlockingDialog();
+        btn.disabled = false; btn.textContent = oldText;
+      }
+    }
+
+    function getPendingTrainingLogs() {
+      const doneIds = new Set(evaluationLogs.map(item => item.log_id));
+      return trainingLogs.filter(item => !doneIds.has(item.log_id));
+    }
+    function getTrainingLogById(logId) { return trainingLogs.find(item => item.log_id === logId) || null; }
+    function getEvaluationById(evalId) { return evaluationLogs.find(item => item.eval_id === evalId) || null; }
+
+    function preselectTrainingModuleSubIds(ids) {
+      const wanted = new Set((Array.isArray(ids) ? ids : []).map(v => String(v || '').trim()));
+      Array.from($('trainingModuleSubSelect')?.options || []).forEach(el => {
+        const token = String(el.value || '').trim();
+        const rawId = String(el.dataset.id || '').trim();
+        el.selected = wanted.has(token) || wanted.has(rawId);
+      });
+      updateTrainingModuleSubSummary();
+    }
+
+    function setTrainingModalMode(mode) {
+      trainingModalMode = mode === 'edit' ? 'edit' : 'create';
+      $('trainingModalTitle').textContent = trainingModalMode === 'edit' ? 'แก้ไขบันทึกการสอนงาน' : 'บันทึกการสอนงาน';
+      $('saveTrainingBtn').textContent = trainingModalMode === 'edit' ? 'บันทึกการแก้ไข' : 'บันทึกการสอนงาน';
+    }
+
+    function populateEvaluationTrainingOptions(selectedLogId = '', includeSelectedCompleted = false) {
+      const opts = ['<option value="">เลือกรายการสอนงาน</option>'];
+      const baseList = getPendingTrainingLogs().slice();
+      if (includeSelectedCompleted && selectedLogId) {
+        const selectedItem = getTrainingLogById(selectedLogId);
+        if (selectedItem && !baseList.some(item => item.log_id === selectedLogId)) baseList.unshift(selectedItem);
+      }
+      baseList.forEach(item => {
+        const label = `${formatDateTime(item.training_datetime || item.created_at, item.training_date)} • ${item.full_name || '-'} • ${item.module_sub_name || '-'}`;
+        const selected = item.log_id === selectedLogId ? ' selected' : '';
+        opts.push(`<option value="${escapeHtml(item.log_id)}"${selected}>${escapeHtml(label)}</option>`);
+      });
+      $('evaluationTrainingSelect').innerHTML = opts.join('');
+      if (selectedLogId) $('evaluationTrainingSelect').value = selectedLogId;
+    }
+
+    function setEvaluationModalMode(mode) {
+      evaluationModalMode = mode === 'edit' ? 'edit' : 'create';
+      $('evaluationModalTitle').textContent = evaluationModalMode === 'edit' ? 'แก้ไขผลประเมิน' : 'บันทึกผลประเมิน';
+      $('saveEvaluationBtn').textContent = evaluationModalMode === 'edit' ? 'บันทึกการแก้ไข' : 'บันทึกผลประเมิน';
+    }
+
+    async function handleEvaluationTrainingChange() {
+      const item = getTrainingLogById($('evaluationTrainingSelect').value);
+      $('evaluationTrainingSummary').textContent = item
+        ? `${formatDateTime(item.training_datetime || item.created_at, item.training_date)} | ${item.full_name || '-'} | ${item.position_name || '-'} | ${item.module_main_name || '-'} > ${item.module_sub_name || '-'}`
+        : '-';
+      await loadQuizForTrainingItem(item, evaluationPrefillAnswers);
+      evaluationPrefillAnswers = [];
+    }
+    function showPostTrainingAction(logId) {
+      const card = $('postTrainingAction');
+      const item = getTrainingLogById(logId);
+      if (!card || !item) return;
+      $('postTrainingActionText').textContent = `${item.full_name || '-'} | ${item.module_sub_name || '-'} | ${formatDateTime(item.training_datetime || item.created_at, item.training_date)}`;
+      card.classList.remove('hidden');
+    }
+    function hidePostTrainingAction() {
+      $('postTrainingAction').classList.add('hidden');
+    }
+    async function openEvaluationModal(preselectedLogId = '', options = {}) {
+      hideMessage('evaluationModalMsg');
+      const mode = options.mode === 'edit' ? 'edit' : 'create';
+      const selectedEval = mode === 'edit' ? getEvaluationById(options.evalId || '') : null;
+      setEvaluationModalMode(mode);
+      editingEvaluationId = selectedEval ? (selectedEval.eval_id || '') : '';
+      evaluationPrefillAnswers = selectedEval ? parseQuizAnswersValue(selectedEval.quiz_answers) : [];
+      $('evaluationModal').classList.add('show');
+      if (mode === 'create') setLockedCurrentDateTime('evaluation');
+      else {
+        $('evaluationDate').value = selectedEval?.evaluation_date || '';
+        $('evaluationDateTimeDisplay').textContent = formatDateTime(selectedEval?.evaluation_datetime || selectedEval?.created_at, selectedEval?.evaluation_date);
+      }
+      $('evaluationResult').value = selectedEval?.result || '';
+      $('evaluationScore').value = selectedEval?.score || '';
+      $('evaluationQuizTotal').value = selectedEval?.quiz_total || '';
+      $('evaluationQuizCorrect').value = selectedEval?.quiz_correct || '';
+      $('evaluationScore').readOnly = false;
+      $('evaluationScore').placeholder = '0-100';
+      $('evaluatorName').value = selectedEval?.evaluator_name || auth?.manager_name || '';
+      $('evaluationNote').value = selectedEval?.note || '';
+      $('evaluationTrainingSummary').textContent = '-';
+      resetEvaluationQuizState();
+
+      try {
+        await loadTrainingFormBootstrap(false, !trainingFormReady);
+      } catch (err) {
+        showMessage('evaluationModalMsg', 'error', err.message || 'โหลดชุดข้อสอบไม่สำเร็จ');
+        return;
+      }
+
+      const selectedLogId = (mode === 'edit' ? (selectedEval?.log_id || preselectedLogId) : (preselectedLogId || latestTrainingForEvaluation || ''));
+      populateEvaluationTrainingOptions(selectedLogId, mode === 'edit');
+      $('evaluationTrainingSelect').disabled = mode === 'edit';
+      await handleEvaluationTrainingChange();
+      if (mode === 'create' && !getPendingTrainingLogs().length) showMessage('evaluationModalMsg', 'info', 'ขณะนี้ไม่มีรายการสอนงานที่รอประเมิน');
+    }
+
+    function closeEvaluationModal() { $('evaluationModal').classList.remove('show'); closeQuizModal(); }
+    function buildEvaluationPayload() {
+      const answers = (currentQuizAppliedAnswers || []).map(item => String(item || '').trim().toUpperCase());
+      return {
+        evalId: editingEvaluationId,
+        branchCode: auth?.branch_code || '',
+        logId: $('evaluationTrainingSelect').value.trim(),
+        evaluationDate: $('evaluationDate').value.trim(),
+        result: $('evaluationResult').value.trim(),
+        score: $('evaluationScore').value.trim(),
+        quizTotal: $('evaluationQuizTotal').value.trim(),
+        quizCorrect: $('evaluationQuizCorrect').value.trim(),
+        quizAnswers: JSON.stringify(answers),
+        evaluatorName: $('evaluatorName').value.trim(),
+        note: $('evaluationNote').value.trim()
+      };
+    }
+    function validateEvaluationPayload(payload) {
+      if (!payload.logId) return 'กรุณาเลือกรายการสอนงาน';
+      if (!payload.evaluationDate) return 'ไม่สามารถสร้างวันที่ประเมินได้';
+      if (currentEvaluationQuiz.length) {
+        if (!payload.quizTotal || Number(payload.quizTotal) !== currentEvaluationQuiz.length) return 'กรุณากดปุ่ม “ทำข้อสอบ” และสรุปคะแนนก่อนบันทึก';
+        if (!currentQuizAppliedAnswers.length || currentQuizAppliedAnswers.some(item => !item)) return 'กรุณาทำข้อสอบให้ครบทุกข้อ และกดสรุปคะแนนก่อนบันทึก';
+        if (!payload.score) return 'ไม่สามารถคำนวณคะแนนจากข้อสอบได้';
+      }
+      if (!payload.result) return 'กรุณาเลือกผลการประเมิน';
+      if (!payload.evaluatorName) return 'กรุณากรอกผู้ประเมิน';
+      if (payload.score && (Number(payload.score) < 0 || Number(payload.score) > 100)) return 'คะแนนต้องอยู่ระหว่าง 0-100';
+      return '';
+    }
+    async function saveEvaluation() {
+      hideMessage('evaluationModalMsg');
+      const payload = buildEvaluationPayload();
+      const error = validateEvaluationPayload(payload);
+      if (error) return showMessage('evaluationModalMsg', 'error', error);
+      const item = getTrainingLogById(payload.logId);
+      const quizSummary = currentEvaluationQuiz.length
+        ? `ข้อสอบ ${payload.quizCorrect}/${payload.quizTotal} ข้อ • คะแนน ${payload.score} • ผลประเมิน ${payload.result}`
+        : `คะแนน ${payload.score || '-'} • ผลประเมิน ${payload.result}`;
+      const ok = await showPrettyConfirm('ยืนยันบันทึกผลประเมิน', `${item ? `${item.full_name || '-'} • ${item.module_sub_name || '-'}` : '-'}
+${quizSummary}`, 'info', 'บันทึกผลประเมิน', 'ยกเลิก');
+      if (!ok) return;
+      const btn = $('saveEvaluationBtn');
+      const oldText = btn.textContent;
+      btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
+      try {
+        const action = evaluationModalMode === 'edit' ? 'updateEvaluation' : 'addEvaluation';
+        const res = await jsonpRequest({ action, ...payload });
+        if (!res.ok) throw new Error(res.message || (evaluationModalMode === 'edit' ? 'แก้ไขผลประเมินไม่สำเร็จ' : 'บันทึกผลประเมินไม่สำเร็จ'));
+        const savedLogId = payload.logId;
+        const localEval = buildLocalEvaluationRow(payload, res);
+        upsertByKey(evaluationLogs, localEval, 'eval_id');
+        refreshEvaluationUI(localEval.eval_id);
+        refreshTrainingUI(savedLogId);
+        closeEvaluationModal();
+        if (savedLogId && latestTrainingForEvaluation === savedLogId) {
+          latestTrainingForEvaluation = '';
+          hidePostTrainingAction();
+        }
+        showMessage('evaluationMsg', 'success', evaluationModalMode === 'edit' ? 'แก้ไขผลประเมินสำเร็จ' : 'บันทึกผลประเมินสำเร็จ');
+        await showPrettyAlert('บันทึกผลประเมินย้อนหลังสำเร็จ', evaluationModalMode === 'edit' ? 'ระบบบันทึกการแก้ไขผลประเมินเรียบร้อยแล้ว' : 'ระบบบันทึกผลการประเมินย้อนหลังเรียบร้อยแล้ว', 'success');
+      } catch (err) {
+        showMessage('evaluationModalMsg', 'error', err.message || 'เกิดข้อผิดพลาดในการบันทึกผลประเมิน');
+      } finally {
+        btn.disabled = false; btn.textContent = oldText;
+      }
+    }
+
+
+    async function deleteTrainingLog(logId) {
+      const item = getTrainingLogById(logId);
+      if (!item) return showMessage('trainingMsg', 'error', 'ไม่พบรายการสอนงานที่ต้องการลบ');
+      const ok = await showPrettyConfirm('ยืนยันลบรายการสอนงาน', `${item.full_name || '-'} • ${item.module_sub_name || '-'}
+หากมีผลประเมินที่ผูกอยู่ ระบบจะลบผลประเมินนั้นด้วย`, 'danger', 'ลบรายการนี้', 'ยกเลิก');
+      if (!ok) return;
+      try {
+        showMessage('trainingMsg', 'info', 'กำลังลบรายการสอนงาน...');
+        const res = await jsonpRequest({ action: 'deleteTrainingLog', branchCode: auth.branch_code, logId });
+        if (!res.ok) throw new Error(res.message || 'ลบรายการสอนงานไม่สำเร็จ');
+        if (latestTrainingForEvaluation === logId) {
+          latestTrainingForEvaluation = '';
+          hidePostTrainingAction();
+        }
+        removeByKey(trainingLogs, 'log_id', logId);
+        evaluationLogs = evaluationLogs.filter(item => item.log_id !== logId);
+        refreshTrainingUI();
+        refreshEvaluationUI();
+        showMessage('trainingMsg', 'success', res.message || 'ลบรายการสอนงานสำเร็จ');
+        showMessage('evaluationMsg', 'success', res.deleted_evaluations ? `ลบผลประเมินที่เกี่ยวข้อง ${res.deleted_evaluations} รายการแล้ว` : `พร้อมใช้งาน ${evaluationLogs.length} รายการ`);
+      } catch (err) {
+        showMessage('trainingMsg', 'error', err.message || 'เกิดข้อผิดพลาดในการลบรายการสอนงาน');
+      }
+    }
+
+    async function deleteEvaluation(evalId) {
+      const item = getEvaluationById(evalId);
+      if (!item) return showMessage('evaluationMsg', 'error', 'ไม่พบผลประเมินที่ต้องการลบ');
+      const ok = await showPrettyConfirm('ยืนยันลบผลประเมิน', `${item.full_name || '-'} • ${item.module_sub_name || '-'}
+วันที่ประเมิน ${formatDateTime(item.evaluation_datetime || item.created_at, item.evaluation_date)}`, 'danger', 'ลบผลประเมิน', 'ยกเลิก');
+      if (!ok) return;
+      try {
+        showMessage('evaluationMsg', 'info', 'กำลังลบผลประเมิน...');
+        const res = await jsonpRequest({ action: 'deleteEvaluation', branchCode: auth.branch_code, evalId });
+        if (!res.ok) throw new Error(res.message || 'ลบผลประเมินไม่สำเร็จ');
+        removeByKey(evaluationLogs, 'eval_id', evalId);
+        refreshEvaluationUI();
+        refreshTrainingUI();
+        showMessage('evaluationMsg', 'success', res.message || 'ลบผลประเมินสำเร็จ');
+      } catch (err) {
+        showMessage('evaluationMsg', 'error', err.message || 'เกิดข้อผิดพลาดในการลบผลประเมิน');
+      }
+    }
+
+    async function initialLoad() {
+      if (!requireBranchSession()) { showLoginView(); return; }
+      try {
+        await loadBranchDashboard(true, false);
+        hidePostTrainingAction();
+        showMessage('employeeMsg', 'success', `พร้อมใช้งาน ${employees.length} รายการ`);
+        showMessage('trainingMsg', 'success', `พร้อมใช้งาน ${trainingLogs.length} รายการ`);
+        showMessage('evaluationMsg', 'success', `พร้อมใช้งาน ${evaluationLogs.length} รายการ`);
+      } catch (err) {
+        showMessage('employeeMsg', 'error', err.message || 'โหลดข้อมูลไม่สำเร็จ');
+        showMessage('trainingMsg', 'error', err.message || 'โหลดข้อมูลไม่สำเร็จ');
+        showMessage('evaluationMsg', 'error', err.message || 'โหลดข้อมูลไม่สำเร็จ');
+      }
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => setActiveTab(btn.dataset.tab)));
+    $('branchCode').addEventListener('input', e => e.target.value = onlyDigits(e.target.value, 4));
+    $('adminCode').addEventListener('input', e => e.target.value = onlyDigits(e.target.value, 6));
+    $('branchBtn').dataset.defaultText = 'เข้าสู่ระบบสาขา';
+    $('adminBtn').dataset.defaultText = 'เข้าสู่ระบบ Admin';
+    $('branchBtn').addEventListener('click', handleBranchLogin);
+    $('adminBtn').addEventListener('click', handleAdminLogin);
+    $('branchCode').addEventListener('keydown', e => { if (e.key === 'Enter') handleBranchLogin(); });
+    $('adminCode').addEventListener('keydown', e => { if (e.key === 'Enter') handleAdminLogin(); });
+
+    $('navEmployeeBtn').addEventListener('click', () => scrollToSection('employeeSection'));
+    $('navTrainingBtn').addEventListener('click', () => scrollToSection('trainingSection'));
+    $('navEvaluationBtn').addEventListener('click', () => scrollToSection('evaluationSection'));
+    $('employeeSearchInput').addEventListener('input', applyEmployeeFilters);
+    $('employeeStatusFilter').addEventListener('change', applyEmployeeFilters);
+    $('reloadEmployeeBtn').addEventListener('click', async () => { await refreshEmployeeData(true); });
+    $('addEmployeeBtn').addEventListener('click', async () => { await ensurePositionsLoaded(); openEmployeeModal('add'); });
+    $('closeEmployeeModalBtn').addEventListener('click', closeEmployeeModal);
+    $('cancelEmployeeBtn').addEventListener('click', closeEmployeeModal);
+    $('reviewEmployeeBtn').addEventListener('click', (e) => { e.preventDefault(); reviewEmployee(); });
+    $('editEmployeeSummaryBtn').addEventListener('click', (e) => { e.preventDefault(); setEmployeeModalStep('form'); });
+    $('saveEmployeeBtn').addEventListener('click', (e) => { e.preventDefault(); saveEmployee(); });
+    $('employeeModal').addEventListener('click', e => { if (e.target.id === 'employeeModal') closeEmployeeModal(); });
+    $('employeeTableBody').addEventListener('click', async e => {
+      const editBtn = e.target.closest('.inline-edit-employee-btn');
+      if (editBtn) {
+        const item = employees.find(x => x.employee_id === (editBtn.dataset.employeeId || ''));
+        if (!item) return;
+        await ensurePositionsLoaded();
+        return openEmployeeModal('edit', item);
+      }
+      const deleteBtn = e.target.closest('.inline-delete-employee-btn');
+      if (deleteBtn) return deleteEmployeeRecord(deleteBtn.dataset.employeeId || '');
+    });
+
+    $('logoutBtn').addEventListener('click', () => { clearSession(); showLoginView(); });
+
+    $('trainingSearchInput').addEventListener('input', applyTrainingFilters);
+    $('evaluationSearchInput').addEventListener('input', applyEvaluationFilters);
+    $('reloadTrainingBtn').addEventListener('click', async () => { await Promise.all([loadTrainingLogs(), loadEvaluationLogs(false)]); });
+    $('reloadEvaluationBtn').addEventListener('click', async () => { await Promise.all([loadEvaluationLogs(), loadTrainingLogs(false)]); });
+    $('addTrainingBtn').addEventListener('click', openTrainingModal);
+    $('evaluateLatestTrainingBtn').addEventListener('click', async () => { await openEvaluationModal(latestTrainingForEvaluation); });
+    $('trainingTableBody').addEventListener('click', async e => {
+      const editBtn = e.target.closest('.inline-edit-training-btn');
+      if (editBtn) return openTrainingEditModal(editBtn.dataset.logId || '');
+      const evalBtn = e.target.closest('.inline-eval-btn');
+      if (evalBtn) {
+        const logId = evalBtn.dataset.logId || '';
+        const existingEval = getEvaluationByLogId(logId);
+        if (existingEval && existingEval.eval_id) {
+          return openEvaluationModal(logId, { mode: 'edit', evalId: existingEval.eval_id });
+        }
+        return openEvaluationModal(logId);
+      }
+      const deleteBtn = e.target.closest('.inline-delete-training-btn');
+      if (deleteBtn) {
+        return deleteTrainingLog(deleteBtn.dataset.logId || '');
+      }
+    });
+
+    $('closeTrainingModalBtn').addEventListener('click', closeTrainingModal);
+    $('cancelTrainingBtn').addEventListener('click', closeTrainingModal);
+    $('trainingModal').addEventListener('click', e => { if (e.target.id === 'trainingModal') closeTrainingModal(); });
+    $('trainingEmployeeSelect').addEventListener('change', handleTrainingEmployeeChange);
+    $('trainingModuleMain').addEventListener('change', handleTrainingModuleMainChange);
+    $('trainingModuleSubToggle').addEventListener('click', (e) => { e.preventDefault(); toggleTrainingModuleSubMenu(); });
+    document.addEventListener('click', (e) => {
+      const wrap = $('trainingModuleSubWrap');
+      if (!wrap || !wrap.contains(e.target)) toggleTrainingModuleSubMenu(false);
+    });
+    $('saveTrainingBtn').addEventListener('click', saveTrainingLog);
+
+    $('closeEvaluationModalBtn').addEventListener('click', closeEvaluationModal);
+    $('cancelEvaluationBtn').addEventListener('click', closeEvaluationModal);
+    $('evaluationModal').addEventListener('click', e => { if (e.target.id === 'evaluationModal') closeEvaluationModal(); });
+    $('evaluationTrainingSelect').addEventListener('change', () => { handleEvaluationTrainingChange(); });
+    $('openQuizModalBtn').addEventListener('click', openQuizModal);
+    $('closeQuizModalBtn').addEventListener('click', closeQuizModal);
+    $('cancelQuizBtn').addEventListener('click', closeQuizModal);
+    $('applyQuizBtn').addEventListener('click', applyQuizModalAnswers);
+    $('quizModalQuestions').addEventListener('change', handleQuizModalChange);
+    $('quizModal').addEventListener('click', e => { if (e.target.id === 'quizModal') closeQuizModal(); });
+    $('saveEvaluationBtn').addEventListener('click', saveEvaluation);
+    $('evaluationTableBody').addEventListener('click', async e => {
+      const editBtn = e.target.closest('.inline-edit-evaluation-btn');
+      if (editBtn) {
+        return openEvaluationModal('', { mode: 'edit', evalId: editBtn.dataset.evalId || '' });
+      }
+      const deleteBtn = e.target.closest('.inline-delete-evaluation-btn');
+      if (deleteBtn) {
+        return deleteEvaluation(deleteBtn.dataset.evalId || '');
+      }
+    });
+
+    (function init(){
+      const session = parseSession();
+      if (session && session.ok && session.role === 'branch' && session.branch_code) {
+        showAppView();
+        $('appDialogConfirmBtn').addEventListener('click', () => closeAppDialog(true));
+    $('appDialogCancelBtn').addEventListener('click', () => closeAppDialog(false));
+    $('appDialog').addEventListener('click', (e) => { if (e.target.id === 'appDialog') closeAppDialog(false); });
+
+    initialLoad();
+      } else {
+        showLoginView();
+      }
+    })();
+  </script>
+</body>
+</html>
